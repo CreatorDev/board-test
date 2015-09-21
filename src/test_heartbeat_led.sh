@@ -1,0 +1,21 @@
+# This test will blink the Heartbeat LED on the board
+
+LOG_LEVEL=1
+BLINK_DELAY_USEC=50000
+
+source common.sh
+parse_command_line $@
+redirect_output_and_error $LOG_LEVEL
+
+echo -e "\n**************************  HEARTBEAT LED test ************************** \n" >&3
+
+HEARBEAT_LED=76
+
+for j in 1 2 3
+do
+        sh test_set_pin.sh $HEARBEAT_LED 0
+        usleep $BLINK_DELAY_USEC
+        sh test_set_pin.sh $HEARBEAT_LED 1
+        usleep $BLINK_DELAY_USEC
+done
+echo -e "Done \n" >&3
