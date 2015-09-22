@@ -11,8 +11,8 @@ PAN_ID=0xbeef
 WPAN_INTERFACE=wpan0
 LOWPAN_INTERFACE=lowpan0
 PHY=phy0
-#pings every 500 msec
-PING_INTERVAL=0.5
+PING_COUNT=50
+PASS_PERCENTAGE_THRESHOLD=90
 
 source common.sh
 redirect_output_and_error $LOG_LEVEL
@@ -110,11 +110,17 @@ else
 	echo -e "Interface already configured\n" >&3
 fi
 
-
 if [ $REMOTE_BOARD -eq 0 ]; then
-echo -e "Pinging to $REMOTE_IP_ADDR, please check if remote board is powered ON and configured\n" >&3
-{
-	ping6 -i $PING_INTERVAL -I $LOWPAN_INTERFACE $REMOTE_IP_ADDR
-}>&3
+	echo -e "Pinging to $REMOTE_IP_ADDR, please check if remote board is powered ON and configured\n" >&3
+
+	get_ping_percentage ipv6 $LOWPAN_INTERFACE $REMOTE_IP_ADDR $PING_COUNT
+	PASS_PERCENTAGE=$?
+	if [ $PASS_PERCENTAGE -gt $PASS_PERCENTAGE_THRESHOLD ]; then
+	    echo -e "PASS \n" >&3
+	    exit 0
+	else
+	    echo -e "FAIL, pass percent not more than $PASS_PERCENTAGE_THRESHOLD%\n" >&3
+	    exit 1
+	fi
 fi
 

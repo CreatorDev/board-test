@@ -4,7 +4,8 @@
 LOG_LEVEL=1
 HOST=www.google.com
 INTERFACE=wlan0
-TRIALS=5
+TRIALS=50
+PASS_PERCENTAGE_THRESHOLD=95
 
 source common.sh
 parse_command_line $@
@@ -36,10 +37,15 @@ if [ $WLAN_STATUS -eq 0 ];then
 fi
 
 if [ $? == 0 ];then
-	ping $HOST -w $TRIALS -I $INTERFACE
-	{
-		[ $? == 0 ] && echo "PASS" || (echo "FAIL"; exit 1)
-	} >&3
+	get_ping_percentage ipv4 $INTERFACE $HOST $TRIALS
+	PASS_PERCENTAGE=$?
+	if [ $PASS_PERCENTAGE -gt $PASS_PERCENTAGE_THRESHOLD ]; then
+			echo -e "PASS \n" >&3
+			exit 0
+		else
+			echo -e "FAIL, pass percent not more than $PASS_PERCENTAGE_THRESHOLD%\n" >&3
+			exit 1
+	fi
 else
 	echo "FAIL" >&3
 	exit 1
