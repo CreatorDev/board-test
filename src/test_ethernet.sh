@@ -1,4 +1,4 @@
-# This script will test ethernet by pinging to www.google.com
+# This script will test ethernet by pinging www.google.com else any url provided using -u option
 
 LOG_LEVEL=1
 HOST=www.google.com
@@ -7,9 +7,40 @@ TRIALS=50
 PASS_PERCENTAGE_THRESHOLD=95
 
 source common.sh
-parse_command_line $@
-redirect_output_and_error $LOG_LEVEL
 
+usage()
+{
+cat << EOF
+
+usage: $0 options
+
+OPTIONS:
+-h	Show this message
+-u	Url/IP to ping e.g -u www.wikipedia.org or -u 192.18.95.80
+-c	Number of times to ping e.g -c 50
+-v	Verbose
+
+EOF
+}
+
+while getopts "u:c:vh" opt; do
+	case $opt in
+		u)
+			HOST=$OPTARG;;
+		c)
+			TRIALS=$OPTARG;;
+		v)
+			LOG_LEVEL=2;;
+		h)
+			usage
+			exit 0;;
+		\?)
+			usage
+			exit 1;;
+	esac
+done
+
+redirect_output_and_error $LOG_LEVEL
 echo -e "\n******************************* Ethernet test *********************************\n" >&3
 
 ifconfig $INTERFACE up
@@ -29,6 +60,8 @@ if [[ "$IP_ASSIGNED" = "false" ]];then
 	udhcpc -i $INTERFACE
 fi
 
+echo -e "Pinging to $HOST $TRIALS number of times" >&3
+
 get_ping_percentage ipv4 $INTERFACE $HOST $TRIALS
 PASS_PERCENTAGE=$?
 if [ $PASS_PERCENTAGE -gt $PASS_PERCENTAGE_THRESHOLD ]; then
@@ -38,4 +71,3 @@ else
     echo -e "FAIL, pass percent not more than $PASS_PERCENTAGE_THRESHOLD%\n" >&3
     exit 1
 fi
-
