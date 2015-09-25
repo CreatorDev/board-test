@@ -28,12 +28,15 @@ OPTIONS:
 -r	if 6lowpan has to be configured on remote board
 -c	number of times to ping e.g -c 50
 -f	6lowpan channel to use [11 - 26] e.g -f 15
+-d	only checks if interface exist
 -v	Verbose
 
 EOF
 }
 
-while getopts "c:f:rvh" opt; do
+DETECT_INTERFACE=0
+
+while getopts "c:f:drvh" opt; do
 	case $opt in
 		r)
 			REMOTE_BOARD=1;;
@@ -46,6 +49,8 @@ while getopts "c:f:rvh" opt; do
 				exit 1;
 			fi
 			;;
+		d)
+			DETECT_INTERFACE=1;;
 		v)
 			LOG_LEVEL=2;;
 		h)
@@ -68,6 +73,12 @@ echo -e "**************************  6lowpan test **************************\n" 
 if [ $? -ne 0 ];then
 	echo -e "FAIL: $WPAN_INTERFACE interface doesn't exist\n" >&3
 	exit 1
+fi
+
+# if interface exist means cc2520 has been detected, declare PASS
+if [ $DETECT_INTERFACE -eq 1 ];then
+	echo -e "PASS: interface exist\n" >&3
+	exit 0
 fi
 
 # bring down the interface to configure channel and pan id

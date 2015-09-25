@@ -4,14 +4,53 @@
 source common.sh
 parse_command_line $@
 
-./test_ethernet.sh $@
-./test_nand.sh $@
-./test_nor.sh $@
-./test_sdcard.sh $@
-./test_wifi.sh $@
-./test_audio.sh -d hw:0,2 $@
-./test_tpm.sh -i 0
-./test_heartbeat_led.sh
-./test_spi_uart.sh
+print_result()
+{
+	TEST_NAME=$1
+	TEST_STATUS=$2
 
-echo ""
+	RED='\033[0;31m'
+	NC='\033[0m' # No Color
+
+	if [ $TEST_STATUS -eq 0 ];then
+		echo -e "$TEST_NAME: PASS\n"
+	else
+		echo -e "$TEST_NAME: ${RED}FAIL${NC}\n"
+	fi
+}
+
+./test_audio.sh -d hw:0,2 $@
+AUDIO_TEST=$?
+./test_nor.sh $@
+NOR_TEST=$?
+./test_nand.sh $@
+NAND_TEST=$?
+./test_sdcard.sh $@
+SDCARD_TEST=$?
+./test_tpm.sh -i 0 $@
+TPM_TEST=$?
+./test_heartbeat_led.sh $@
+HEARTBEAT_LED_TEST=$?
+./test_spi_uart.sh $@
+SPI_UART_TEST=$?
+./test_ethernet.sh $@
+ETHERNET_TEST=$?
+./test_bluetooth.sh -s $@
+BLUETOOTH_TEST=$?
+./test_6lowpan.sh -d $@
+LOWPAN_TEST=$?
+./test_wifi.sh $@
+WIFI_TEST=$?
+
+echo -e "\n******************************* RESULTS ************************************\n"
+print_result "AUDIO" $AUDIO_TEST
+print_result "NOR" $NOR_TEST
+print_result "NAND" $NAND_TEST
+print_result "SDCARD" $SDCARD_TEST
+print_result "TPM" $TPM_TEST
+print_result "SPI_UART" $SPI_UART_TEST
+print_result "ETHERNET" $ETHERNET_TEST
+print_result "BLUETOOTH" $BLUETOOTH_TEST
+print_result "6LOWPAN" $LOWPAN_TEST
+print_result "WIFI" $WIFI_TEST
+
