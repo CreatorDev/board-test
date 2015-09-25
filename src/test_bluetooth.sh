@@ -1,7 +1,45 @@
 LOG_LEVEL=1
 BLUETOOTH_RESET_MFIO=43
+TRIALS=50
+PASS_PERCENTAGE_THRESHOLD=95
 source common.sh
-parse_command_line $@
+
+usage()
+{
+cat << EOF
+
+usage: $0 options
+
+OPTIONS:
+-h	Show this message
+-s	Scan devices
+-p	ping device e.g -p 00:22:61:90:87:CD
+-c	Number of times to ping e.g -c 50
+-v	Verbose
+
+EOF
+}
+
+while getopts "p:c:svh" opt; do
+	case $opt in
+		s)
+			SCAN=1;;
+		p)
+			PING=1
+			BADDR=$OPTARG;;
+		c)
+			TRIALS=$OPTARG;;
+		v)
+			LOG_LEVEL=2;;
+		h)
+			usage
+			exit 0;;
+		\?)
+			usage
+			exit 1;;
+	esac
+done
+
 redirect_output_and_error $LOG_LEVEL
 
 echo -e "\n**************************  Bluetooth test**************************\n" >&3
@@ -47,17 +85,38 @@ EOF
 	} >&3
 	sleep 5
 fi
-{
-	hciconfig hci0 reset &&\
-	hciconfig hci0 up &&\
-	hciconfig hci0 piscan &&\
-	hciconfig hci0 version &&\
-	hcitool dev
-	{
-		hcitool scan
-	} >&3
-}
+FAIL=0
+hciconfig hci0 reset &&\
+hciconfig hcpi0 up &&\
+hciconfig hci0 piscan &&\
+hciconfig hci0 version &&\
+hcitool dev || FAIL=1
+if [ $FAIL -eq 1 ]; then
+	echo -e "FAIL\n" >&3
+	exit 1
+fi
 
+if [ $SCAN -eq 1 ]; then
 {
-	[ $? == 0 ] && echo "PASS" || (echo "FAIL"; exit 1)
+	RESULT=$(hcitool scan | awk '{ if (NR>1) { print $1,$2}  }')
+	if [ $? -ne 0 ] || [ -z $RESULT ]; then
+		(echo "SCAN FAIL: No device found"; exit 1)
+	else
+		echo -e "$RESULT"
+		echo -e "\nSCAN PASS\n"
+	fi
 } >&3
+fi
+
+if [ $PING -eq 1 ]; then
+	# bluetooth ping doesn't require interface so passing "dummy"
+	get_ping_percentage bt "dummy" $BADDR $TRIALS
+	PASS_PERCENTAGE=$?
+	if [ $PASS_PERCENTAGE -gt $PASS_PERCENTAGE_THRESHOLD ]; then
+	    echo -e "PING PASS" >&3
+	    exit 0
+	else
+	    echo -e "PING FAIL, pass percent not more than $PASS_PERCENTAGE_THRESHOLD%" >&3
+	    exit 1
+	fi
+fi

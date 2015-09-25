@@ -48,6 +48,8 @@ get_ping_percentage()
 	do
 		if [ $PING_TYPE = "ipv6" ]; then
 			ping6 -I $INTERFACE $REMOTE_IP_ADDR -c 1
+		elif [ $PING_TYPE = "bt" ];then
+			l2ping $REMOTE_IP_ADDR -c 1
 		else
 			ping -I $INTERFACE $REMOTE_IP_ADDR -w 1
 		fi
