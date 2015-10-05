@@ -1,8 +1,8 @@
-# This script will test wifi by pinging www.google.com else any url provided using -u option
+# This script will test wifi by pinging any url/IP provided using -u option or default gateway
+# if nothing is found out of these then it pings www.google.com
 # Export WLAN_SSID and WLAN_PASSWORD to run this test
 
 LOG_LEVEL=1
-HOST=www.google.com
 INTERFACE=wlan0
 TRIALS=20
 PASS_PERCENTAGE_THRESHOLD=95
