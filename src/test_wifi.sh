@@ -4,7 +4,7 @@
 LOG_LEVEL=1
 HOST=www.google.com
 INTERFACE=wlan0
-TRIALS=50
+TRIALS=20
 PASS_PERCENTAGE_THRESHOLD=95
 
 source common.sh
@@ -72,7 +72,7 @@ echo -e "Pinging to $HOST $TRIALS number of times" >&3
 if [ $? == 0 ];then
 	get_ping_percentage ipv4 $INTERFACE $HOST $TRIALS
 	PASS_PERCENTAGE=$?
-	if [ $PASS_PERCENTAGE -gt $PASS_PERCENTAGE_THRESHOLD ]; then
+	if [ $PASS_PERCENTAGE -ge $PASS_PERCENTAGE_THRESHOLD ]; then
 			echo -e "PASS \n" >&3
 			exit 0
 		else
