@@ -32,7 +32,7 @@ NOR_TEST=$?
 NAND_TEST=$?
 ./test_sdcard.sh $@
 SDCARD_TEST=$?
-./test_tpm.sh -i 0 $@
+./test_tpm.sh -b marduk $@
 TPM_TEST=$?
 ./test_heartbeat_led.sh $@
 HEARTBEAT_LED_TEST=$?

@@ -1,6 +1,7 @@
 # This test tries to read one register from Infineon chip
 
 LOG_LEVEL=1
+MARDUK_TPM_RST_MFIO=42
 source common.sh
 
 usage()
@@ -11,14 +12,27 @@ usage: $0 options
 
 OPTIONS:
 -h	Show this message
--i	I2C bus number, for e.g. 'sh test_tpm.sh -i 0' for marduk
+-b	board type (beetle, marduk) e.g -b marduk
 -v	Verbose
 
 EOF
 }
 
-while getopts "i:vh" opt; do
+while getopts "b:vh" opt; do
 	case $opt in
+		b)
+			BOARD_NAME=$OPTARG
+			if [ "marduk" = $BOARD_NAME ]; then
+				# Set up TPM_RST MFIO
+				sh test_set_pin.sh $MARDUK_TPM_RST_MFIO 1
+				I2C_BUS=0
+			elif [ "beetle" = $BOARD_NAME ]; then
+				I2C_BUS=1
+			else
+				echo -e "Board name not valid\n"
+				exit 1;
+			fi
+			;;
 		i)
 			I2C_BUS=$OPTARG;;
 		v)
