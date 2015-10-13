@@ -1,6 +1,11 @@
 # This script will try to run scripts which don't require manual intervention
 # other tests have to be run manually
 
+# source any environment variables if set by tester
+ls ./env.sh &> /dev/null
+if [ $? -eq 0 ];then
+	source ./env.sh
+fi
 source common.sh
 parse_command_line $@
 
@@ -33,13 +38,21 @@ TPM_TEST=$?
 HEARTBEAT_LED_TEST=$?
 ./test_spi_uart.sh $@
 SPI_UART_TEST=$?
-./test_ethernet.sh $@
+if [ -z ${ETHERNET_PING_HOST} ];then
+	./test_ethernet.sh $@
+else
+	./test_ethernet.sh -u $ETHERNET_PING_HOST $@
+fi
 ETHERNET_TEST=$?
 ./test_bluetooth.sh -s $@
 BLUETOOTH_TEST=$?
 ./test_6lowpan.sh -d $@
 LOWPAN_TEST=$?
-./test_wifi.sh $@
+if [ -z ${WIFI_PING_HOST} ];then
+	./test_wifi.sh $@
+else
+	./test_wifi.sh -u $WIFI_PING_HOST $@
+fi
 WIFI_TEST=$?
 
 echo -e "\n******************************* RESULTS ************************************\n"

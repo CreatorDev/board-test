@@ -1,6 +1,7 @@
 # This test tries to read one register from Infineon chip
 
 LOG_LEVEL=1
+MARDUK_TPM_RST_MFIO=42
 source common.sh
 
 usage()
@@ -40,6 +41,9 @@ fi
 redirect_output_and_error $LOG_LEVEL
 
 echo -e "\n**************************  TPM test **************************\n" >&3
+
+# Set up TPM_RST MFIO
+sh test_set_pin.sh $MARDUK_TPM_RST_MFIO 1
 
 # Insert i2c_dev driver if not already inserted
 VALUE=`lsmod | grep i2c_dev`
