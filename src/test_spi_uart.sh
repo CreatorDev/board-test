@@ -7,7 +7,7 @@ source common.sh
 parse_command_line $@
 redirect_output_and_error $LOG_LEVEL
 
-echo -e "**************************  SPI-UART chip test **************************" >&3
+echo -e "\n**************************  SPI-UART chip test **************************\n" >&3
 
 VALUE=`lsmod | grep sc16is7xx`
 if [ -z "$VALUE" ]; then
@@ -32,4 +32,5 @@ do
 	usleep $BLINK_DELAY_USEC
 done
 
-echo -e "Done \n" >&3
+echo -e "\nDid all the LED's blink?\n" >&3
+show_result_based_on_switch_pressed

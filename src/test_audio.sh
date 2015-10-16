@@ -1,7 +1,7 @@
-# This script will play sine wave on left and right channel for 4 loops
+# This script will play sine wave on left and right channel for 2 loops
 
 LOG_LEVEL=1
-LOOPS=4
+LOOPS=2
 
 source common.sh
 
@@ -52,6 +52,5 @@ echo -e "Play audio for $LOOPS loops on $PCM_DEVICE\n" >&3
 
 speaker-test -D $PCM_DEVICE -F S32_LE -c 2 -t sine -l $LOOPS
 
-{
-	[ $? == 0 ] && echo "PASS" || (echo "FAIL"; exit 1)
-} >&3
+echo -e "\nDid you hear the sine wave audio on left and right channels?\n" >&3
+show_result_based_on_switch_pressed

@@ -7,7 +7,7 @@ source common.sh
 parse_command_line $@
 redirect_output_and_error $LOG_LEVEL
 
-echo -e "\n**************************  HEARTBEAT LED test ************************** \n" >&3
+echo -e "\n**************************  HEARTBEAT LED test **************************\n" >&3
 
 HEARBEAT_LED=76
 
@@ -18,4 +18,6 @@ do
         sh test_set_pin.sh $HEARBEAT_LED 1
         usleep $BLINK_DELAY_USEC
 done
-echo -e "Done \n" >&3
+
+echo -e "\nDid Heartbeat LED blink?\n" >&3
+show_result_based_on_switch_pressed
