@@ -14,11 +14,12 @@ OPTIONS:
 -h	Show this message
 -b	board type (beetle, marduk) e.g -b marduk
 -v	Verbose
+-V	Show package version
 
 EOF
 }
 
-while getopts "b:vh" opt; do
+while getopts "b:vVh" opt; do
 	case $opt in
 		b)
 			BOARD_NAME=$OPTARG
@@ -37,6 +38,10 @@ while getopts "b:vh" opt; do
 			I2C_BUS=$OPTARG;;
 		v)
 			LOG_LEVEL=2;;
+		V)
+			echo -n "version = "
+			cat version
+			exit 0;;
 		h)
 			usage
 			exit 0;;

@@ -7,16 +7,23 @@ usage: $0 options
 OPTIONS:
 -h	Show this message
 -v	Verbose
+-V	Show package version
 
 EOF
 }
 
 parse_command_line()
 {
-	while getopts "vh" opt; do
+	while getopts "vVh" opt; do
 		case $opt in
 			v)
 				LOG_LEVEL=2;;
+
+			V)
+				echo -n "version = "
+				cat version
+				exit 0;;
+
 			h)
 				usage
 				exit 0;;

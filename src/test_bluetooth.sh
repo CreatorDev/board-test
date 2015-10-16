@@ -29,11 +29,12 @@ OPTIONS:
 -u	enable device discovery and pairing
 -c	Number of times to ping e.g -c 50
 -v	Verbose
+-V	Show package version
 
 EOF
 }
 
-while getopts "p:c:b:svuh" opt; do
+while getopts "p:c:b:svVuh" opt; do
 	case $opt in
 		s)
 			SCAN=1;;
@@ -57,6 +58,10 @@ while getopts "p:c:b:svuh" opt; do
 			ALLOW_PAIRING=1;;
 		v)
 			LOG_LEVEL=2;;
+		V)
+			echo -n "version = "
+			cat version
+			exit 0;;
 		h)
 			usage
 			exit 0;;
