@@ -15,16 +15,21 @@ OPTIONS:
 -h	Show this message
 -d	PCM device name e.g. -d hw:0,2
 -v	Verbose
+-V	Show package version
 
 EOF
 }
 
-while getopts "d:vh" opt; do
+while getopts "d:vVh" opt; do
 	case $opt in
 		d)
 			PCM_DEVICE=$OPTARG;;
 		v)
 			LOG_LEVEL=2;;
+		V)
+			echo -n "version = "
+			cat version
+			exit 0;;
 		h)
 			usage
 			exit 0;;

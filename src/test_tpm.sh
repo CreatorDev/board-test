@@ -14,16 +14,21 @@ OPTIONS:
 -h	Show this message
 -i	I2C bus number, for e.g. 'sh test_tpm.sh -i 0' for marduk
 -v	Verbose
+-V	Show package version
 
 EOF
 }
 
-while getopts "i:vh" opt; do
+while getopts "i:vVh" opt; do
 	case $opt in
 		i)
 			I2C_BUS=$OPTARG;;
 		v)
 			LOG_LEVEL=2;;
+		V)
+			echo -n "version = "
+			cat version
+			exit 0;;
 		h)
 			usage
 			exit 0;;

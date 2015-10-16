@@ -19,11 +19,12 @@ OPTIONS:
 -u	Url/IP to ping e.g -u www.wikipedia.org or -u 192.18.95.80
 -c	Number of times to ping e.g -c 50
 -v	Verbose
+-V	Show package version
 
 EOF
 }
 
-while getopts "u:c:vh" opt; do
+while getopts "u:c:vVh" opt; do
 	case $opt in
 		u)
 			HOST=$OPTARG;;
@@ -31,6 +32,10 @@ while getopts "u:c:vh" opt; do
 			TRIALS=$OPTARG;;
 		v)
 			LOG_LEVEL=2;;
+		V)
+			echo -n "version = "
+			cat version
+			exit 0;;
 		h)
 			usage
 			exit 0;;

@@ -30,13 +30,14 @@ OPTIONS:
 -f	6lowpan channel to use [11 - 26] e.g -f 15
 -d	only checks if interface exist
 -v	Verbose
+-V	Show package version
 
 EOF
 }
 
 DETECT_INTERFACE=0
 
-while getopts "c:f:drvh" opt; do
+while getopts "c:f:drvVh" opt; do
 	case $opt in
 		r)
 			REMOTE_BOARD=1;;
@@ -53,6 +54,10 @@ while getopts "c:f:drvh" opt; do
 			DETECT_INTERFACE=1;;
 		v)
 			LOG_LEVEL=2;;
+		V)
+			echo -n "version = "
+			cat version
+			exit 0;;
 		h)
 			usage
 			exit 0;;
