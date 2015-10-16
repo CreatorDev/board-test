@@ -74,3 +74,24 @@ get_ping_percentage()
 	percent=$((PASS_COUNT*100/PING_COUNT))
 	return $percent
 }
+
+show_result_based_on_switch_pressed()
+{
+	{
+		echo -e "Press switch 1 for pass or switch 2 for fail \n"
+		./test_switch -w -t 10
+		case $? in
+			1)
+				echo "PASS";;
+			2)
+				echo "FAIL"
+				exit 1;;
+			254)
+				echo "FAIL (no key pressed within timeout)"
+				exit 254;;
+			255)
+				echo "FAIL (some error in reading switches)"
+				exit 255;;
+		esac
+	} >&3
+}
