@@ -2,6 +2,7 @@
 
 LOG_LEVEL=1
 BLINK_DELAY_USEC=50000
+BLINK_COUNT=10
 
 source common.sh
 parse_command_line $@
@@ -11,7 +12,7 @@ echo -e "\n**************************  HEARTBEAT LED test **********************
 
 HEARBEAT_LED=76
 
-for j in 1 2 3
+for j in $(seq 1 $BLINK_COUNT)
 do
         sh test_set_pin.sh $HEARBEAT_LED 0
         usleep $BLINK_DELAY_USEC
