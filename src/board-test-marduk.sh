@@ -24,6 +24,14 @@ print_result()
 	fi
 }
 
+./test_switch -t 10
+SWITCH_TEST=$?
+./test_audio.sh -d hw:0,2 $@
+AUDIO_TEST=$?
+./test_heartbeat_led.sh $@
+HEARTBEAT_LED_TEST=$?
+./test_spi_uart.sh $@
+SPI_UART_TEST=$?
 ./test_nor.sh $@
 NOR_TEST=$?
 ./test_nand.sh $@
@@ -48,16 +56,12 @@ else
 	./test_wifi.sh -u $WIFI_PING_HOST $@
 fi
 WIFI_TEST=$?
-./test_switch -t 10
-SWITCH_TEST=$?
-./test_audio.sh -d hw:0,2 $@
-AUDIO_TEST=$?
-./test_heartbeat_led.sh $@
-HEARTBEAT_LED_TEST=$?
-./test_spi_uart.sh $@
-SPI_UART_TEST=$?
 
 echo -e "\n******************************* RESULTS ************************************\n"
+print_result "SWITCH" $SWITCH_TEST
+print_result "AUDIO" $AUDIO_TEST
+print_result "HEARTBEAT_LED" $HEARTBEAT_LED_TEST
+print_result "SPI_UART" $SPI_UART_TEST
 print_result "NOR" $NOR_TEST
 print_result "NAND" $NAND_TEST
 print_result "SDCARD" $SDCARD_TEST
@@ -66,7 +70,3 @@ print_result "ETHERNET" $ETHERNET_TEST
 print_result "BLUETOOTH" $BLUETOOTH_TEST
 print_result "6LOWPAN" $LOWPAN_TEST
 print_result "WIFI" $WIFI_TEST
-print_result "SWITCH" $SWITCH_TEST
-print_result "AUDIO" $AUDIO_TEST
-print_result "HEARTBEAT_LED" $HEARTBEAT_LED_TEST
-print_result "SPI_UART" $SPI_UART_TEST
