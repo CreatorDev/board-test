@@ -48,7 +48,7 @@ fi
 ETHERNET_TEST=$?
 ./test_bluetooth.sh -s $@
 BLUETOOTH_TEST=$?
-./test_6lowpan.sh -d $@
+./test_6lowpan.sh $@
 LOWPAN_TEST=$?
 if [ -z ${WIFI_PING_HOST} ];then
 	./test_wifi.sh $@
