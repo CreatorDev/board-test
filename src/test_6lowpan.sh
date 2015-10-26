@@ -12,7 +12,7 @@ PAN_ID=0xbeef
 WPAN_INTERFACE=wpan0
 LOWPAN_INTERFACE=lowpan0
 PHY=phy0
-PING_COUNT=50
+PING_COUNT=20
 PASS_PERCENTAGE_THRESHOLD=90
 
 source common.sh
@@ -161,12 +161,11 @@ if [ $REMOTE_BOARD -eq 0 ]; then
 
 	get_ping_percentage ipv6 $LOWPAN_INTERFACE $REMOTE_IP_ADDR $PING_COUNT
 	PASS_PERCENTAGE=$?
-	if [ $PASS_PERCENTAGE -gt $PASS_PERCENTAGE_THRESHOLD ]; then
+	if [ $PASS_PERCENTAGE -ge $PASS_PERCENTAGE_THRESHOLD ]; then
 	    echo -e "PASS\n" >&3
 	    exit 0
 	else
-	    echo -e "FAIL: pass percent not more than $PASS_PERCENTAGE_THRESHOLD%\n" >&3
+	    echo -e "FAIL: pass percent is not greater than or equal to $PASS_PERCENTAGE_THRESHOLD%\n" >&3
 	    exit 1
 	fi
 fi
-
