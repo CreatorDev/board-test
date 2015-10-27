@@ -2,6 +2,7 @@
 
 LOG_LEVEL=1
 LOOPS=2
+WAIT_FOR_KEY_PRESS=false
 
 source common.sh
 
@@ -14,13 +15,14 @@ usage: $0 options
 OPTIONS:
 -h	Show this message
 -d	PCM device name e.g. -d hw:0,2
+-w	wait for user input on PASS/FAIL
 -v	Verbose
 -V	Show package version
 
 EOF
 }
 
-while getopts "d:vVh" opt; do
+while getopts "d:wvVh" opt; do
 	case $opt in
 		d)
 			PCM_DEVICE=$OPTARG;;
@@ -30,6 +32,8 @@ while getopts "d:vVh" opt; do
 			echo -n "version = "
 			cat version
 			exit 0;;
+		w)
+			WAIT_FOR_KEY_PRESS=true;;
 		h)
 			usage
 			exit 0;;
@@ -52,5 +56,8 @@ echo -e "Play audio for $LOOPS loops on $PCM_DEVICE\n" >&3
 
 speaker-test -D $PCM_DEVICE -F S32_LE -c 2 -t sine -l $LOOPS
 
-echo -e "\nDid you hear the sine wave audio on left and right channels?\n" >&3
-show_result_based_on_switch_pressed
+if [ $WAIT_FOR_KEY_PRESS = "true" ];then
+	# Waiting for user input is currently only for marduk
+	echo -e "\nDid you hear the sine wave audio on left and right channels?\n" >&3
+	show_result_based_on_switch_pressed
+fi
