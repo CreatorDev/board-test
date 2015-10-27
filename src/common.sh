@@ -95,3 +95,18 @@ show_result_based_on_switch_pressed()
 		esac
 	} >&3
 }
+
+print_result()
+{
+	TEST_NAME=$1
+	TEST_STATUS=$2
+
+	RED='\033[0;31m'
+	NC='\033[0m' # No Color
+
+	if [ $TEST_STATUS -eq 0 ];then
+		echo -e "$TEST_NAME: PASS\n"
+	else
+		echo -e "$TEST_NAME: ${RED}FAIL${NC}\n"
+	fi
+}
