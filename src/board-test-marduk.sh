@@ -26,7 +26,7 @@ print_result()
 
 ./test_switch -t 10
 SWITCH_TEST=$?
-./test_audio.sh -d hw:0,2 $@
+./test_audio.sh -d hw:0,2 -w $@
 AUDIO_TEST=$?
 ./test_heartbeat_led.sh $@
 HEARTBEAT_LED_TEST=$?
