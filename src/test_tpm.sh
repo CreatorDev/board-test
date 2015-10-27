@@ -28,7 +28,7 @@ while getopts "b:vVh" opt; do
 				sh test_set_pin.sh $MARDUK_TPM_RST_MFIO 1
 				I2C_BUS=0
 			elif [ "beetle" = $BOARD_NAME ]; then
-				I2C_BUS=1
+				I2C_BUS=0
 			else
 				echo -e "Board name not valid\n"
 				exit 1;
@@ -69,7 +69,7 @@ fi
 
 # DIDVID register address is 0x6 and should read 0x15d1 for SLB9645VQ1.2 chip
 {
-	VALUE=`i2cget -y $I2C_BUS 0x20 0x6 w`
+	VALUE=`i2cget -y -f $I2C_BUS 0x20 0x6 w`
 }>&4
 EXPECTED=0x15d1
 if [ "$VALUE" = "$EXPECTED" ]; then
