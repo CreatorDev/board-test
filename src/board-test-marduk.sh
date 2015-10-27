@@ -46,7 +46,7 @@ else
 	./test_ethernet.sh -u $ETHERNET_PING_HOST $@
 fi
 ETHERNET_TEST=$?
-./test_bluetooth.sh -s $@
+./test_bluetooth.sh -b marduk -s $@
 BLUETOOTH_TEST=$?
 ./test_6lowpan.sh $@
 LOWPAN_TEST=$?

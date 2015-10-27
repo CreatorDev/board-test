@@ -1,7 +1,6 @@
 # This script will test bluetooth by
 #scanning, pinging any bluetooth device, and allowing pairing to the DUT.
 LOG_LEVEL=1
-BLUETOOTH_RESET_MFIO=43
 TRIALS=50
 PASS_PERCENTAGE_THRESHOLD=95
 ALLOW_PAIRING=0
@@ -24,7 +23,7 @@ OPTIONS:
 		4) Ping any blutooth device
 
 -s	Scan devices
--b	board type (beetle, marduk) default is marduk e.g -b marduk
+-b	board type (beetle, marduk) e.g -b marduk
 -p	ping device e.g -p 00:22:61:90:87:CD
 -u	enable device discovery and pairing
 -c	Number of times to ping e.g -c 50
@@ -70,6 +69,11 @@ while getopts "p:c:b:svVuh" opt; do
 			exit 1;;
 	esac
 done
+
+if [ -z $BLUETOOTH_RESET_MFIO ];then
+	echo -e "Specify board name e.g -b marduk\n"
+	exit 1
+fi
 
 redirect_output_and_error $LOG_LEVEL
 
