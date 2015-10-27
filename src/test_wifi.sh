@@ -1,10 +1,12 @@
 # This script will test wifi by pinging www.google.com else any url provided using -u option
-# Export WLAN_SSID and WLAN_PASSWORD to run this test
+# Export WLAN_SSID and WLAN_PASSWORD to run this test for marduk, for beetle export WLAN_ENCRYPTION
+# as well
 
 LOG_LEVEL=1
 HOST=www.google.com
 INTERFACE=wlan0
 TRIALS=20
+BOARD=marduk
 PASS_PERCENTAGE_THRESHOLD=95
 
 source common.sh
@@ -18,18 +20,21 @@ OPTIONS:
 -h	Show this message
 -u	Url/IP to ping e.g -u www.wikipedia.org or -u 192.18.95.80
 -c	Number of times to ping e.g -c 50
+-b	board name e.g -b marduk/beetle
 -v	Verbose
 -V	Show package version
 
 EOF
 }
 
-while getopts "u:c:vVh" opt; do
+while getopts "u:b:c:vVh" opt; do
 	case $opt in
 		u)
 			HOST=$OPTARG;;
 		c)
 			TRIALS=$OPTARG;;
+		b)
+			BOARD=$OPTARG;;
 		v)
 			LOG_LEVEL=2;;
 		V)
@@ -59,17 +64,46 @@ if [ -z ${WLAN_PASSWORD} ];then
 	exit 1
 fi
 
-WLAN_STATUS=0
-# Check if wlan is assigned IP address or not
-/sbin/ifconfig $INTERFACE >&4 && WLAN_STATUS=`/sbin/ifconfig $INTERFACE | grep "inet addr:" -c`
-
-# Assign IP to wlan if not assigned
-if [ $WLAN_STATUS -eq 0 ];then
-	wpa_passphrase $WLAN_SSID $WLAN_PASSWORD > wlan_supplicant.conf &&\
-	ifconfig $INTERFACE up  &&\
-	(wpa_supplicant -Dnl80211 -i$INTERFACE -c ./wlan_supplicant.conf -B) &&\
-	sleep 2 &&\
-	udhcpc -i $INTERFACE
+if [ "$BOARD" = "marduk" ]; then
+	WLAN_STATUS=0
+	# Check if wlan is assigned IP address or not
+	/sbin/ifconfig $INTERFACE >&4 && WLAN_STATUS=`/sbin/ifconfig $INTERFACE | grep "inet addr:" -c`
+	# Assign IP to wlan if not assigned
+	if [ $WLAN_STATUS -eq 0 ];then
+		wpa_passphrase $WLAN_SSID $WLAN_PASSWORD > wlan_supplicant.conf &&\
+		ifconfig $INTERFACE up  &&\
+		(wpa_supplicant -Dnl80211 -i$INTERFACE -c ./wlan_supplicant.conf -B) &&\
+		sleep 2 &&\
+		udhcpc -i $INTERFACE
+	fi
+elif [ "$BOARD" = "beetle" ]; then
+	if [ -z ${WLAN_ENCRYPTION} ];then
+		echo "Please export WLAN_ENCRYPTION to run this script e.g export WLAN_ENCRYPTION=psk" >&3
+		exit 1
+	fi
+	if [ ! "$(uci get wireless.sta)" == "wifi-iface" ]; then
+		uci set wireless.sta=wifi-iface
+		uci set wireless.sta.device=radio0
+		uci set wireless.sta.network=sta
+		uci set wireless.sta.mode=sta
+	fi
+	uci set wireless.sta.ssid=$WLAN_SSID
+	uci set wireless.sta.encryption=$WLAN_ENCRYPTION
+	uci set wireless.sta.key=$WLAN_PASSWORD
+	uci commit wireless
+	/etc/init.d/S39netifd restart
+	echo -e "configuring wifi..." >&3
+	sleep 20
+	WLAN_STATUS=0
+	# Check if wlan is assigned IP address or not
+	/sbin/ifconfig $INTERFACE >&4 && WLAN_STATUS=`/sbin/ifconfig $INTERFACE | grep "inet addr:" -c`
+	if [ $WLAN_STATUS -eq 0 ];then
+		echo -e "Couldn't configure wifi" >&3
+		exit 1
+	fi
+else
+	echo -e "Wrong board name" >&3
+	exit 1
 fi
 
 echo -e "Pinging to $HOST $TRIALS number of times" >&3
