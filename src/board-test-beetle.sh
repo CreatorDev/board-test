@@ -32,6 +32,10 @@ fi
 WIFI_TEST=$?
 ./test_bluetooth.sh -s -b beetle $@
 BLUETOOTH_TEST=$?
+./test_adc_rawcount.sh $@
+ADC_TEST=$?
+./test_gpio_beetle.sh $@
+GPIO_TEST=$?
 
 echo -e "\n******************************* RESULTS ************************************\n"
 print_result "AUDIO" $AUDIO_TEST
@@ -42,3 +46,5 @@ print_result "TPM" $TPM_TEST
 print_result "ETHERNET" $ETHERNET_TEST
 print_result "WIFI" $WIFI_TEST
 print_result "BLUETOOTH" $BLUETOOTH_TEST
+print_result "ADC" $ADC_TEST
+print_result "GPIO" $GPIO_TEST
