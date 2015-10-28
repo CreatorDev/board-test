@@ -34,6 +34,8 @@ done
 
 redirect_output_and_error $LOG_LEVEL
 
+echo -e "\n******************************* ADC test ************************************\n" >&3
+
 get_adc_channel_raw_count()
 {
     CHANNEL=$1
