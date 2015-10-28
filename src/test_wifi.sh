@@ -1,9 +1,9 @@
-# This script will test wifi by pinging www.google.com else any url provided using -u option
+# This script will test wifi by pinging any url/IP provided using -u option or default gateway
+# if nothing is found out of these then it pings www.google.com
 # Export WLAN_SSID and WLAN_PASSWORD to run this test for marduk, for beetle export WLAN_ENCRYPTION
 # as well
 
 LOG_LEVEL=1
-HOST=www.google.com
 INTERFACE=wlan0
 TRIALS=20
 BOARD=marduk
@@ -20,7 +20,6 @@ OPTIONS:
 -h	Show this message
 -u	Url/IP to ping e.g -u www.wikipedia.org or -u 192.18.95.80
 -c	Number of times to ping e.g -c 50
--b	board name e.g -b marduk/beetle
 -a	which antenna(1,2) to use for wifi, only for beetle eg -a 1
 -v	Verbose
 -V	Show package version
@@ -28,14 +27,12 @@ OPTIONS:
 EOF
 }
 
-while getopts "u:b:c:a:vVh" opt; do
+while getopts "u:c:a:vVh" opt; do
 	case $opt in
 		u)
 			HOST=$OPTARG;;
 		c)
 			TRIALS=$OPTARG;;
-		b)
-			BOARD=$OPTARG;;
 		a)
 			ANTENNA=$OPTARG
 			if [ $ANTENNA -ne 1 ] && [ $ANTENNA -ne 2 ]; then
@@ -72,23 +69,20 @@ if [ -z ${WLAN_PASSWORD} ];then
 	exit 1
 fi
 
-if [ "$BOARD" = "marduk" ]; then
-	WLAN_STATUS=0
-	# Check if wlan is assigned IP address or not
-	/sbin/ifconfig $INTERFACE >&4 && WLAN_STATUS=`/sbin/ifconfig $INTERFACE | grep "inet addr:" -c`
-	# Assign IP to wlan if not assigned
-	if [ $WLAN_STATUS -eq 0 ];then
-		wpa_passphrase $WLAN_SSID $WLAN_PASSWORD > wlan_supplicant.conf &&\
-		ifconfig $INTERFACE up  &&\
-		(wpa_supplicant -Dnl80211 -i$INTERFACE -c ./wlan_supplicant.conf -B) &&\
-		sleep 2 &&\
-		udhcpc -i $INTERFACE
-	fi
-elif [ "$BOARD" = "beetle" ]; then
+{
+	uci
+} >&4
+if [ $? -eq 0 ]; then
 	if [ -z ${WLAN_ENCRYPTION} ];then
 		echo "Please export WLAN_ENCRYPTION to run this script e.g export WLAN_ENCRYPTION=psk" >&3
 		exit 1
 	fi
+	# disable ethernet
+	uci set network.eth.enabled=0
+	# enable wifi
+	uci set network.sta.enabled=1
+	uci commit network
+
 	if [ ! "$(uci get wireless.sta)" == "wifi-iface" ]; then
 		uci set wireless.sta=wifi-iface
 		uci set wireless.sta.device=radio0
@@ -120,8 +114,28 @@ elif [ "$BOARD" = "beetle" ]; then
 		exit 1
 	fi
 else
-	echo -e "Wrong board name" >&3
-	exit 1
+	# this is for marduk where uci is not applicable
+
+	WLAN_STATUS=0
+	# Check if wlan is assigned IP address or not
+	/sbin/ifconfig $INTERFACE >&4 && WLAN_STATUS=`/sbin/ifconfig $INTERFACE | grep "inet addr:" -c`
+	# Assign IP to wlan if not assigned
+	if [ $WLAN_STATUS -eq 0 ];then
+		wpa_passphrase $WLAN_SSID $WLAN_PASSWORD > wlan_supplicant.conf &&\
+		ifconfig $INTERFACE up  &&\
+		(wpa_supplicant -Dnl80211 -i$INTERFACE -c ./wlan_supplicant.conf -B) &&\
+		sleep 2 &&\
+		udhcpc -i $INTERFACE
+	fi
+fi
+
+# if host not provided by user, find the host from route
+if [ -z $HOST ];then
+	HOST=$(/sbin/route -n | grep $INTERFACE | awk '{if (index($4,"G")) {print $2}}' | head -n 1)
+	# if route fails for any reason use www.google.com
+	if [ -z $HOST ];then
+		HOST=www.google.com
+	fi
 fi
 
 echo -e "Pinging to $HOST $TRIALS number of times" >&3
