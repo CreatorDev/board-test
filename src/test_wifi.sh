@@ -72,6 +72,15 @@ if [ $WLAN_STATUS -eq 0 ];then
 	udhcpc -i $INTERFACE
 fi
 
+# if host not provided by user, find the host from route
+if [ -z $HOST ];then
+	HOST=$(/sbin/route -n | grep $INTERFACE | awk '{if (index($4,"G")) {print $2}}' | head -n 1)
+	# if route fails for any reason use www.google.com
+	if [ -z $HOST ];then
+		HOST=www.google.com
+	fi
+fi
+
 echo -e "Pinging to $HOST $TRIALS number of times" >&3
 
 if [ $? == 0 ];then

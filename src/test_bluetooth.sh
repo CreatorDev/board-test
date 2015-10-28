@@ -29,11 +29,12 @@ OPTIONS:
 -c	Number of times to ping e.g -c 50
 -v	Verbose
 -V	Show package version
+-d	enable DUT mode using method bccmd/hci e.g. -d bccmd
 
 EOF
 }
 
-while getopts "p:c:svVuh" opt; do
+while getopts "p:c:d:svVuh" opt; do
 	case $opt in
 		s)
 			SCAN=1;;
@@ -50,6 +51,13 @@ while getopts "p:c:svVuh" opt; do
 			echo -n "version = "
 			cat version
 			exit 0;;
+		d)
+			DUT_METHOD=$OPTARG
+			if [ "bccmd" != $DUT_METHOD ] && [ "hci" != $DUT_METHOD ]; then
+				echo -e "DUT method name not valid\n"
+				exit 1;
+			fi
+			;;
 		h)
 			usage
 			exit 0;;
@@ -58,6 +66,7 @@ while getopts "p:c:svVuh" opt; do
 			exit 1;;
 	esac
 done
+
 
 redirect_output_and_error $LOG_LEVEL
 
@@ -169,4 +178,45 @@ if [ $PING -eq 1 ]; then
 	    echo -e "PING FAIL, pass percent not more than $PASS_PERCENTAGE_THRESHOLD%" >&3
 	    exit 1
 	fi
+fi
+
+if [ "bccmd" = $DUT_METHOD ]; then
+	echo -e "Enabling DUT mode using BCCMD commands\n" >&3
+	sleep 1
+	bccmd -t hci enabledevconnect
+	if [ $? -ne 0 ]; then
+		echo "Failed to enable dev_connect" >&3
+		exit 1
+	else
+		sleep 1
+		bccmd -t hci enabledutmode
+		if [ $? -ne 0 ]; then
+			echo "Failed to enable DUT mode" >&3
+			exit 1
+		fi
+	fi
+	echo -e "DUT mode enabled" >&3
+elif [ "hci" = $DUT_METHOD ]; then
+	echo -e "Enabling DUT mode using HCI commands\n" >&3
+	sleep 1
+	hcitool cmd 0x03 0x1a 0x03
+	if [ $? -ne 0 ]; then
+		echo "Failed to enable BT enquiry scan" >&3
+		exit 1
+	else
+		sleep 1
+		hcitool cmd 0x03 0x05 0x02 0x00 0x03
+		if [ $? -ne 0 ]; then
+			echo "Failed to set event filter to allow all connections with role switch" >&3
+			exit 1
+		else
+			sleep 1
+			hcitool cmd 0x06 0x0003
+			if [ $? -ne 0 ]; then
+				echo "Failed to enter BT test mode" >&3
+				exit 1
+			fi
+		fi
+	fi
+	echo -e "DUT mode enabled" >&3
 fi
