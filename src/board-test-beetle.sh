@@ -25,11 +25,16 @@ else
 fi
 ETHERNET_TEST=$?
 if [ -z ${WIFI_PING_HOST} ];then
-        ./test_wifi.sh -b beetle $@
+        ./test_wifi.sh -b beetle -a 1 $@
+	WIFI_ANTENNA_1_TEST=$?
+        ./test_wifi.sh -b beetle -a 2 $@
+	WIFI_ANTENNA_2_TEST=$?
 else
-        ./test_wifi.sh -u $WIFI_PING_HOST -b beetle $@
+        ./test_wifi.sh -u $WIFI_PING_HOST -b beetle -a 1 $@
+	WIFI_ANTENNA_1_TEST=$?
+        ./test_wifi.sh -u $WIFI_PING_HOST -b beetle -a 2 $@
+	WIFI_ANTENNA_2_TEST=$?
 fi
-WIFI_TEST=$?
 ./test_bluetooth.sh -s -b beetle $@
 BLUETOOTH_TEST=$?
 ./test_adc_rawcount.sh $@
@@ -44,7 +49,8 @@ print_result "NAND" $NAND_TEST
 print_result "SDCARD" $SDCARD_TEST
 print_result "TPM" $TPM_TEST
 print_result "ETHERNET" $ETHERNET_TEST
-print_result "WIFI" $WIFI_TEST
+print_result "WIFI ANTENNA 1" $WIFI_ANTENNA_1_TEST
+print_result "WIFI ANTENNA 2" $WIFI_ANTENNA_2_TEST
 print_result "BLUETOOTH" $BLUETOOTH_TEST
 print_result "ADC" $ADC_TEST
 print_result "GPIO" $GPIO_TEST
