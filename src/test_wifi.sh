@@ -21,13 +21,14 @@ OPTIONS:
 -u	Url/IP to ping e.g -u www.wikipedia.org or -u 192.18.95.80
 -c	Number of times to ping e.g -c 50
 -b	board name e.g -b marduk/beetle
+-a	which antenna(1,2) to use for wifi, only for beetle eg -a 1
 -v	Verbose
 -V	Show package version
 
 EOF
 }
 
-while getopts "u:b:c:vVh" opt; do
+while getopts "u:b:c:a:vVh" opt; do
 	case $opt in
 		u)
 			HOST=$OPTARG;;
@@ -35,6 +36,13 @@ while getopts "u:b:c:vVh" opt; do
 			TRIALS=$OPTARG;;
 		b)
 			BOARD=$OPTARG;;
+		a)
+			ANTENNA=$OPTARG
+			if [ $ANTENNA -ne 1 ] && [ $ANTENNA -ne 2 ]; then
+				echo -e "invalid antenna number, antenna should be either 1 or 2"
+				exit 1
+			fi
+			;;
 		v)
 			LOG_LEVEL=2;;
 		V)
@@ -91,12 +99,22 @@ elif [ "$BOARD" = "beetle" ]; then
 	uci set wireless.sta.encryption=$WLAN_ENCRYPTION
 	uci set wireless.sta.key=$WLAN_PASSWORD
 	uci commit wireless
+	if [ -n "$ANTENNA" ]; then
+		echo -e "setting antenna $ANTENNA" >&3
+		echo uccp_num_spatial_streams=1 > /proc/uccp420/params
+		echo antenna_sel=$ANTENNA > /proc/uccp420/params
+	fi
 	/etc/init.d/S39netifd restart
 	echo -e "configuring wifi..." >&3
 	sleep 20
 	WLAN_STATUS=0
-	# Check if wlan is assigned IP address or not
-	/sbin/ifconfig $INTERFACE >&4 && WLAN_STATUS=`/sbin/ifconfig $INTERFACE | grep "inet addr:" -c`
+	# Interface name is getting changed everytime we write in /proc/uccp420/params
+	# So get the interface name before pinging
+	INTERFACE=$(ifconfig | grep wlan | awk '{print $1}')
+	if [ -n "$INTERFACE" ]; then
+		# Check if wlan is assigned IP address or not
+		/sbin/ifconfig $INTERFACE >&4 && WLAN_STATUS=`/sbin/ifconfig $INTERFACE | grep "inet addr:" -c`
+	fi
 	if [ $WLAN_STATUS -eq 0 ];then
 		echo -e "Couldn't configure wifi" >&3
 		exit 1
