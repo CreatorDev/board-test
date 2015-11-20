@@ -55,25 +55,47 @@ redirect_output_and_error()
 	esac
 }
 
-# pings specified number of times and returns the pass percentage
-get_ping_percentage()
+single_ping()
 {
 	PING_TYPE=$1
 	INTERFACE=$2
 	REMOTE_IP_ADDR=$3
+
+	if [ $PING_TYPE = "ipv6" ]; then
+		ping6 -I $INTERFACE $REMOTE_IP_ADDR -c 1
+	elif [ $PING_TYPE = "bt" ];then
+		l2ping $REMOTE_IP_ADDR -c 1
+	else
+		ping -I $INTERFACE $REMOTE_IP_ADDR -c 1
+	fi
+
+	ret=$?
+}
+
+continuous_ping()
+{
+	INTERFACE=$2
+	REMOTE_IP_ADDR=$3
+
+	while true
+	do
+		single_ping $@
+		if [ $ret -ne "0" ]; then
+			echo -e "Pinging from $INTERFACE to $REMOTE_IP_ADDR failed\n" >&3
+		fi
+		sleep 1
+	done
+}
+
+# pings specified number of times and returns the pass percentage
+get_ping_percentage()
+{
 	PING_COUNT=$4
 
 	PASS_COUNT=0
 	for i in $(seq 1 1 $PING_COUNT)
 	do
-		if [ $PING_TYPE = "ipv6" ]; then
-			ping6 -I $INTERFACE $REMOTE_IP_ADDR -c 1
-		elif [ $PING_TYPE = "bt" ];then
-			l2ping $REMOTE_IP_ADDR -c 1
-		else
-			ping -I $INTERFACE $REMOTE_IP_ADDR -w 1
-		fi
-		ret=$?
+		single_ping $1 $2 $3
 		if [ $ret -eq "0" ]; then
 			PASS_COUNT=$(($PASS_COUNT + 1))
 		fi

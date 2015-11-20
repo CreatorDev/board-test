@@ -39,7 +39,7 @@ OPTIONS:
 -s	Scan devices
 -p	ping device e.g -p 00:22:61:90:87:CD
 -u	enable device discovery and pairing
--c	Number of times to ping e.g -c 50
+-c	Number of times to ping, default 50, and pass -c 0 for continuous mode
 -v	Verbose
 -V	Show package version
 -d	enable DUT mode using method bccmd/hci e.g. -d bccmd
@@ -181,15 +181,21 @@ echo -e "Scanning bluetooth devices\n"
 fi
 
 if [ $PING -eq 1 ]; then
-	# bluetooth ping doesn't require interface so passing "dummy"
-	echo -e "Pinging bluetooth device with addr $BADDR\n"
-	get_ping_percentage bt "dummy" $BADDR $TRIALS
-	PASS_PERCENTAGE=$?
-	if [ $PASS_PERCENTAGE -gt $PASS_PERCENTAGE_THRESHOLD ]; then
-	    echo -e "PING PASS" >&3
+	if [ $TRIALS -eq 0 ];then
+		echo "Pinging bluetooth device with addr $BADDR continuously" >&3
+
+		continuous_ping bt "dummy" $BADDR
 	else
-	    echo -e "PING FAIL, pass percent not more than $PASS_PERCENTAGE_THRESHOLD%" >&3
-	    exit 1
+		# bluetooth ping doesn't require interface so passing "dummy"
+		echo -e "Pinging bluetooth device with addr $BADDR\n"
+		get_ping_percentage bt "dummy" $BADDR $TRIALS
+		PASS_PERCENTAGE=$?
+		if [ $PASS_PERCENTAGE -gt $PASS_PERCENTAGE_THRESHOLD ]; then
+		    echo "PING PASS" >&3
+		else
+		    echo "PING FAIL, pass percent not more than $PASS_PERCENTAGE_THRESHOLD%" >&3
+		    exit 1
+		fi
 	fi
 fi
 

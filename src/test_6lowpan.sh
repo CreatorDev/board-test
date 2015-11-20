@@ -17,7 +17,7 @@
 
 
 LOG_LEVEL=1
-REMOTE_BOARD=0
+REMOTE_BOARD=false
 CHANNEL=26
 IP_ADDR="2001:db8:dead:beef::1"
 REMOTE_IP_ADDR="2001:db8:dead:beef::5"
@@ -39,7 +39,7 @@ usage: $0 options
 OPTIONS:
 -h	Show this message
 -r	if 6lowpan has to be configured on remote board
--c	number of times to ping e.g -c 50
+-c	number of times to ping, default 20, and pass -c 0 for continuous mode
 -f	6lowpan channel to use [11 - 26] e.g -f 15
 -d	only checks if interface exist
 -v	Verbose
@@ -53,7 +53,7 @@ DETECT_INTERFACE=0
 while getopts "c:f:drvVh" opt; do
 	case $opt in
 		r)
-			REMOTE_BOARD=1;;
+			REMOTE_BOARD=true;;
 		c)
 			PING_COUNT=$OPTARG;;
 		f)
@@ -108,7 +108,7 @@ if [ $? -ne 0 ];then
 fi
 
 # based on whether it is test board or remote board decide the IP
-if [ $REMOTE_BOARD -eq 1 ]; then
+if (( $REMOTE_BOARD )); then
 	IP="$REMOTE_IP_ADDR/64"
 else
 	IP="$IP_ADDR/64"
@@ -169,16 +169,23 @@ if [ $FAIL -eq 1 ]; then
 fi
 
 # ping to the remote board
-if [ $REMOTE_BOARD -eq 0 ]; then
+if (( ! $REMOTE_BOARD )); then
 	echo -e "Pinging to $REMOTE_IP_ADDR, please check if remote board is powered ON and configured\n" >&3
 
-	get_ping_percentage ipv6 $LOWPAN_INTERFACE $REMOTE_IP_ADDR $PING_COUNT
-	PASS_PERCENTAGE=$?
-	if [ $PASS_PERCENTAGE -ge $PASS_PERCENTAGE_THRESHOLD ]; then
-	    echo -e "PASS\n" >&3
-	    exit 0
+	if [ $PING_COUNT -eq 0 ]; then
+		echo "Pinging to $REMOTE_IP_ADDR continuously" >&3
+
+		continuous_ping ipv6 $LOWPAN_INTERFACE $REMOTE_IP_ADDR
 	else
-	    echo -e "FAIL: pass percent is not greater than or equal to $PASS_PERCENTAGE_THRESHOLD%\n" >&3
-	    exit 1
+		echo "Pinging to $REMOTE_IP_ADDR $PING_COUNT number of times" >&3
+
+		get_ping_percentage ipv6 $LOWPAN_INTERFACE $REMOTE_IP_ADDR $PING_COUNT
+		PASS_PERCENTAGE=$?
+		if [ $PASS_PERCENTAGE -ge $PASS_PERCENTAGE_THRESHOLD ]; then
+		    echo -e "PASS\n" >&3
+		else
+		    echo -e "FAIL: pass percent is not greater than or equal to $PASS_PERCENTAGE_THRESHOLD%\n" >&3
+		    exit 1
+		fi
 	fi
 fi

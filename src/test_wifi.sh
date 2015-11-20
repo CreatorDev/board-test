@@ -1,3 +1,16 @@
+#
+# Copyright 2015 by Imagination Technologies Limited and/or its affiliated group companies.
+#
+# All rights reserved.  No part of this software, either
+# material or conceptual may be copied or distributed,
+# transmitted, transcribed, stored in a retrieval system
+# or translated into any human or computer language in any
+# form by any means, electronic, mechanical, manual or
+# other-wise, or disclosed to the third parties without the
+# express written permission of Imagination Technologies
+# Limited, Home Park Estate, Kings Langley, Hertfordshire,
+# WD4 8LZ, U.K.
+
 # This script will test wifi by pinging any url/IP provided using -u option or default gateway
 # if nothing is found out of these then it pings www.google.com
 # Export WLAN_SSID and WLAN_PASSWORD to run this test
@@ -17,7 +30,7 @@ usage: $0 options
 OPTIONS:
 -h	Show this message
 -u	Url/IP to ping e.g -u www.wikipedia.org or -u 192.18.95.80
--c	Number of times to ping e.g -c 50
+-c	Number of times to ping, default 20, and pass -c 0 for continuous mode
 -v	Verbose
 -V	Show package version
 
@@ -84,14 +97,22 @@ fi
 echo -e "Pinging to $HOST $TRIALS number of times" >&3
 
 if [ $? == 0 ];then
-	get_ping_percentage ipv4 $INTERFACE $HOST $TRIALS
-	PASS_PERCENTAGE=$?
-	if [ $PASS_PERCENTAGE -ge $PASS_PERCENTAGE_THRESHOLD ]; then
+	if [ $TRIALS -eq 0 ];then
+		echo "Pinging to $HOST continuously" >&3
+
+		continuous_ping ipv4 $INTERFACE $HOST
+	else
+		echo "Pinging to $HOST $TRIALS number of times" >&3
+
+		get_ping_percentage ipv4 $INTERFACE $HOST $TRIALS
+		PASS_PERCENTAGE=$?
+		if [ $PASS_PERCENTAGE -ge $PASS_PERCENTAGE_THRESHOLD ]; then
 			echo -e "PASS \n" >&3
 			exit 0
 		else
 			echo -e "FAIL, pass percent not more than $PASS_PERCENTAGE_THRESHOLD%\n" >&3
 			exit 1
+		fi
 	fi
 else
 	echo "FAIL" >&3
