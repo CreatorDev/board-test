@@ -32,7 +32,7 @@ usage: $0 options
 OPTIONS:
 -h	Show this message
 -u	Url/IP to ping e.g -u www.wikipedia.org or -u 192.18.95.80
--c	Number of times to ping e.g -c 50
+-c	Number of times to ping, default 20, and pass -c 0 for continuous mode
 -a	which antenna(1,2) to use for wifi, only for beetle eg -a 1
 -v	Verbose
 -V	Show package version
@@ -151,17 +151,23 @@ if [ -z $HOST ];then
 	fi
 fi
 
-echo -e "Pinging to $HOST $TRIALS number of times" >&3
 
 if [ $? == 0 ];then
-	get_ping_percentage ipv4 $INTERFACE $HOST $TRIALS
-	PASS_PERCENTAGE=$?
-	if [ $PASS_PERCENTAGE -ge $PASS_PERCENTAGE_THRESHOLD ]; then
+	if [ $TRIALS -eq 0 ];then
+		echo "Pinging to $HOST continuously" >&3
+
+		continuous_ping ipv4 $INTERFACE $HOST
+	else
+		echo "Pinging to $HOST $TRIALS number of times" >&3
+
+		get_ping_percentage ipv4 $INTERFACE $HOST $TRIALS
+		PASS_PERCENTAGE=$?
+		if [ $PASS_PERCENTAGE -ge $PASS_PERCENTAGE_THRESHOLD ]; then
 			echo -e "PASS \n" >&3
-			exit 0
 		else
 			echo -e "FAIL, pass percent not more than $PASS_PERCENTAGE_THRESHOLD%\n" >&3
 			exit 1
+		fi
 	fi
 else
 	echo "FAIL" >&3
