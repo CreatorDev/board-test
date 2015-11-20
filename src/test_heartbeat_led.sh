@@ -18,20 +18,72 @@ BLINK_DELAY_USEC=50000
 BLINK_COUNT=10
 
 source common.sh
-parse_command_line $@
+
+usage()
+{
+cat << EOF
+
+usage: $0 options
+
+OPTIONS:
+-h	Show this message
+-c	Number of blink counts, default 10, and pass -c 0 for continuous mode
+-d	Blink delay in milliseconds, default 50 milliseconds
+-v	Verbose
+-V	Show package version
+
+EOF
+}
+
+while getopts "d:c:vVh" opt; do
+	case $opt in
+		c)
+			BLINK_COUNT=$OPTARG;;
+		d)
+			BLINK_DELAY_USEC=$(($OPTARG * 1000));;
+		v)
+			LOG_LEVEL=2;;
+		V)
+			echo -n "version = "
+			cat version
+			exit 0;;
+		h)
+			usage
+			exit 0;;
+		\?)
+			usage
+			exit 1;;
+	esac
+done
+
+
 redirect_output_and_error $LOG_LEVEL
 
 echo -e "\n**************************  HEARTBEAT LED test **************************\n" >&3
 
-HEARBEAT_LED=76
+HEARTBEAT_LED=76
 
-for j in $(seq 1 $BLINK_COUNT)
-do
-        sh test_set_pin.sh $HEARBEAT_LED 0
+blink_led()
+{
+        sh test_set_pin.sh $HEARTBEAT_LED 0
         usleep $BLINK_DELAY_USEC
-        sh test_set_pin.sh $HEARBEAT_LED 1
+        sh test_set_pin.sh $HEARTBEAT_LED 1
         usleep $BLINK_DELAY_USEC
-done
+        sh test_set_pin.sh $HEARTBEAT_LED 0
+        usleep $BLINK_DELAY_USEC
+}
+
+if [ $BLINK_COUNT -eq 0 ];then
+	while true
+	do
+		blink_led
+	done
+else
+	for j in $(seq 1 $BLINK_COUNT)
+	do
+		blink_led
+	done
+fi
 
 echo -e "\nDid Heartbeat LED blink?\n" >&3
 show_result_based_on_switch_pressed
