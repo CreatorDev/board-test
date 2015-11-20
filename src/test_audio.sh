@@ -11,7 +11,7 @@
 # Limited, Home Park Estate, Kings Langley, Hertfordshire,
 # WD4 8LZ, U.K.
 
-# This script will play sine wave on left and right channel for 2 loops
+# This script will play sine wave on left and right channels.
 
 LOG_LEVEL=1
 LOOPS=2
@@ -27,6 +27,7 @@ usage: $0 options
 
 OPTIONS:
 -h	Show this message
+-c	Number of loops to play, default 2, and pass -c 0 for continuous mode
 -d	PCM device name e.g. -d hw:0,2
 -w	wait for user input on PASS/FAIL
 -v	Verbose
@@ -35,10 +36,12 @@ OPTIONS:
 EOF
 }
 
-while getopts "d:wvVh" opt; do
+while getopts "d:c:wvVh" opt; do
 	case $opt in
 		d)
 			PCM_DEVICE=$OPTARG;;
+		c)
+			LOOPS=$OPTARG;;
 		v)
 			LOG_LEVEL=2;;
 		V)
@@ -65,7 +68,11 @@ redirect_output_and_error $LOG_LEVEL
 
 echo -e "\n******************************* Audio test ************************************\n" >&3
 
-echo -e "Play audio for $LOOPS loops on $PCM_DEVICE\n" >&3
+if [ $LOOPS -ne 0 ];then
+	echo -e "Play audio for $LOOPS loops on $PCM_DEVICE\n" >&3
+else
+	echo -e "Play audio continuously on $PCM_DEVICE\n" >&3
+fi
 
 speaker-test -D $PCM_DEVICE -F S32_LE -c 2 -t sine -l $LOOPS
 
