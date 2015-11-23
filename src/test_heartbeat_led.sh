@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Copyright 2015 by Imagination Technologies Limited and/or its affiliated group companies.
 #
