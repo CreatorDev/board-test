@@ -16,35 +16,16 @@
 
 LOG_LEVEL=1
 
-source common.sh
+source click_common.sh
 parse_command_line $@
 redirect_output_and_error $LOG_LEVEL
 
-MIKROBUS=$1
-
-if [ -z "$MIKROBUS" ]; then
-    echo -e "Please provide mikroBUS number (1 or 2) as an argument\n" >&3
-    exit 1
-fi
-
-if [ $MIKROBUS -ne 1 -a $MIKROBUS -ne 2 ]; then
-    echo -e "Error: correct mikroBUS values are 1 or 2\n" >&3
-    exit 1
-fi
-
-PWM_NUM=$(( MIKROBUS - 1 ))
-PWM_DIR="/sys/class/pwm/pwmchip0/pwm${PWM_NUM}/"
+get_mikrobus_number $1
+MIKROBUS=$?
 
 echo -e "\n**************************  CLICK BARGARPH test **************************\n" >&3
 
-# Enable PWM
-if [ ! -d "$PWM_DIR" ]; then
-    echo -e "Exporting and enabling pwm on mikroBUS ${MIKROBUS}\n"
-    echo $PWM_NUM > /sys/class/pwm/pwmchip0/export
-    echo 100000 > "$PWM_DIR/period"
-    echo 50000 > "$PWM_DIR/duty_cycle"
-    echo 1 > "$PWM_DIR/enable"
-fi
+enable_pwm $MIKROBUS
 
 # Run the actual test
 ./test_click_write_bargraph -m $MIKROBUS -d

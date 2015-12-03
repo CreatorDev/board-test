@@ -17,30 +17,16 @@
 
 LOG_LEVEL=1
 
-source common.sh
+source click_common.sh
 parse_command_line $@
 redirect_output_and_error $LOG_LEVEL
 
-MIKROBUS=$1
-
-if [ -z "$MIKROBUS" ]; then
-    echo -e "Please provide mikroBUS number (1 or 2) as an argument\n" >&3
-    exit 1
-fi
-
-if [ $MIKROBUS -ne 1 -a $MIKROBUS -ne 2 ]; then
-    echo -e "Error: correct mikroBUS values are 1 or 2\n" >&3
-    exit 1
-fi
+get_mikrobus_number $1
+MIKROBUS=$?
 
 echo -e "\n**************************  CLICK THERMO3 test **************************\n" >&3
 
-# Insert i2c_dev driver if not already inserted
-VALUE=`lsmod | grep i2c_dev`
-if [ -z "$VALUE" ]; then
-    echo -e "Inserting i2c_dev driver\n"
-    modprobe i2c_dev
-fi
+enable_i2c_driver
 
 # Run the actual test
 VAL=`./test_click_read_thermo3 -m $MIKROBUS`
