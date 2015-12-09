@@ -2,6 +2,7 @@
 ########################
 ADD_EXECUTABLE(test_click_write_bargraph test_click_write_bargraph.c)
 ADD_EXECUTABLE(test_click_read_thermo3 test_click_read_thermo3.c)
+ADD_EXECUTABLE(test_click_wait_gpio test_click_wait_gpio.c)
 
 # Add install targets
 ######################
@@ -11,4 +12,5 @@ INSTALL(FILES ${SCRIPTS} DESTINATION /usr/bin/board_test
         GROUP_EXECUTE GROUP_READ
         WORLD_EXECUTE WORLD_READ)
 INSTALL(TARGETS test_click_write_bargraph test_click_read_thermo3
+        test_click_wait_gpio
         RUNTIME DESTINATION /usr/bin/board_test)
