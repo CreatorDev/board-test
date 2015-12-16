@@ -92,6 +92,8 @@ if [ $TOTAL_MMC_DEVS -ne 0 ];then
 		CONTINUOUS=true
 	fi
 
+	PASS=0
+	FAIL=0
 	while [ $CONTINUOUS == true -o $TRIALS -gt 0 ]
 	do
 		COUNT=$TOTAL_MMC_DEVS
@@ -107,10 +109,17 @@ if [ $TOTAL_MMC_DEVS -ne 0 ];then
 				cp /tmp/temp0.img $MOUNT_DIR/temp1.img	&&\
 				sync	&&\
 				cmp /tmp/temp0.img $MOUNT_DIR/temp1.img
-				{
-					[ $? == 0 ] && echo "PASS" || (echo "FAIL - partition $MMC_DEVICE"; if [ $COUNT == 0 ]; then exit 1; fi)
-				}
-
+				if [ $? == 0 ]; then
+					echo "PASS"
+					PASS=$((PASS + 1))
+				else
+					echo "FAIL - partition $MMC_DEVICE"
+					FAIL=$((FAIL + 1))
+					if [ $COUNT == 0 ]; then
+						exit 1
+					fi
+				fi
+				[ $CONTINUOUS == true ] && update_test_status "sdcard" 2 $PASS $FAIL
 				rm /tmp/temp0.img $MOUNT_DIR/temp1.img >&4
 			fi
 		done

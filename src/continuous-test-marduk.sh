@@ -14,13 +14,15 @@
 # This script will try to run scripts in parallel.
 
 # source any environment variables if set by tester
+source ./common.sh
+
 ls ./env.sh &> /dev/null
 if [ $? -eq 0 ];then
 	source ./env.sh
 fi
 
 # killing all processes if they are running
-killall speaker-test
+killall test_audio.sh
 killall test_heartbeat_led.sh
 killall test_sdcard.sh
 killall test_ethernet.sh
@@ -54,3 +56,14 @@ sleep 2
 ./test_6lowpan.sh -c 0 &
 sleep 2
 
+# wait until tests start running before printing out results
+sleep 30
+
+# print out results every 5 seconds
+while sleep 5; do
+	for result in "$TEST_RESULT_PREFIX"*; do
+		STAT=`cat $result`
+		printf "${result#$TEST_RESULT_PREFIX} ${STAT} | "
+	done
+	printf "\n"
+done

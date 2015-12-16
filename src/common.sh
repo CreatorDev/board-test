@@ -72,17 +72,45 @@ single_ping()
 	ret=$?
 }
 
+# Prefix of the file keeping cont. test results
+TEST_RESULT_PREFIX="/tmp/cont_board_test."
+
+# Global keeping reference time
+REPORT_RESULT_REF_TIME=0
+
+update_test_status()
+{
+	NAME=$1
+	PERIOD=$2
+	PASS_NUM=$3
+	FAIL_NUM=$4
+
+	TNOW=`date +"%s"`
+	TDIFF=$((TNOW - REPORT_RESULT_REF_TIME))
+	if [ $TDIFF -ge $PERIOD ]; then
+		echo "P: $PASS_NUM F: $FAIL_NUM" > "${TEST_RESULT_PREFIX}${NAME}"
+		REPORT_RESULT_REF_TIME=$TNOW
+	fi
+}
+
 continuous_ping()
 {
 	INTERFACE=$2
 	REMOTE_IP_ADDR=$3
+
+	PASS=0
+	FAIL=0
 
 	while true
 	do
 		single_ping $@
 		if [ $ret -ne "0" ]; then
 			echo -e "Pinging from $INTERFACE to $REMOTE_IP_ADDR failed\n" >&3
+			FAIL=$((FAIL + 1))
+		else
+			PASS=$((PASS + 1))
 		fi
+		update_test_status "$INTERFACE" 2 $PASS $FAIL
 		sleep 1
 	done
 }
