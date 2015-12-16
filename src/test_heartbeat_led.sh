@@ -66,25 +66,46 @@ HEARTBEAT_LED=76
 
 blink_led()
 {
-        sh test_set_pin.sh $HEARTBEAT_LED 0
-        usleep $BLINK_DELAY_USEC
-        sh test_set_pin.sh $HEARTBEAT_LED 1
-        usleep $BLINK_DELAY_USEC
-        sh test_set_pin.sh $HEARTBEAT_LED 0
-        usleep $BLINK_DELAY_USEC
+	sh test_set_pin.sh $HEARTBEAT_LED 0
+	if [ $? -ne 0 ];then
+		return 1
+	fi
+	usleep $BLINK_DELAY_USEC
+
+	sh test_set_pin.sh $HEARTBEAT_LED 1
+	if [ $? -ne 0 ];then
+		return 1
+	fi
+	usleep $BLINK_DELAY_USEC
+
+	sh test_set_pin.sh $HEARTBEAT_LED 0
+	if [ $? -ne 0 ];then
+		return 1
+	fi
+	usleep $BLINK_DELAY_USEC
 }
 
 if [ $BLINK_COUNT -eq 0 ];then
+	echo -e "Blink heartbeat led continuously\n" >&3
+	PASS=0
+	FAIL=0
 	while true
 	do
 		blink_led
+		if [ $? -eq 0 ];then
+			PASS=$((PASS + 1))
+		else
+			FAIL=$((FAIL + 1))
+		fi
+		update_test_status "heartbeat" 2 $PASS $FAIL
 	done
 else
+	echo -e "Blink heartbeat led for $BLINK_COUNT counts\n" >&3
 	for j in $(seq 1 $BLINK_COUNT)
 	do
 		blink_led
 	done
-fi
 
-echo -e "\nDid Heartbeat LED blink?\n" >&3
-show_result_based_on_switch_pressed
+	echo -e "\nDid Heartbeat LED blink?\n" >&3
+	show_result_based_on_switch_pressed
+fi

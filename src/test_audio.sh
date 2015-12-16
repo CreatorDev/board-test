@@ -69,16 +69,26 @@ redirect_output_and_error $LOG_LEVEL
 
 echo -e "\n******************************* Audio test ************************************\n" >&3
 
-if [ $LOOPS -ne 0 ];then
-	echo -e "Play audio for $LOOPS loops on $PCM_DEVICE\n" >&3
-else
+if [ $LOOPS -eq 0 ];then
 	echo -e "Play audio continuously on $PCM_DEVICE\n" >&3
-fi
-
-speaker-test -D $PCM_DEVICE -F S32_LE -c 2 -t sine -l $LOOPS
-
-if [ $WAIT_FOR_KEY_PRESS = "true" ];then
-	# Waiting for user input is currently only for marduk
-	echo -e "\nDid you hear the sine wave audio on left and right channels?\n" >&3
-	show_result_based_on_switch_pressed
+	PASS=0
+	FAIL=0
+	while true
+	do
+		speaker-test -D $PCM_DEVICE -F S32_LE -c 2 -t sine -l 1
+		if [ $? -eq 0 ];then
+			PASS=$((PASS + 1))
+		else
+			FAIL=$((FAIL + 1))
+		fi
+		update_test_status "audio" 2 $PASS $FAIL
+	done
+else
+	echo -e "Play audio for $LOOPS loops on $PCM_DEVICE\n" >&3
+	speaker-test -D $PCM_DEVICE -F S32_LE -c 2 -t sine -l $LOOPS
+	if [ $WAIT_FOR_KEY_PRESS = "true" ];then
+		# Waiting for user input is currently only for marduk
+		echo -e "\nDid you hear the sine wave audio on left and right channels?\n" >&3
+		show_result_based_on_switch_pressed
+	fi
 fi
