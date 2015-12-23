@@ -22,12 +22,6 @@ redirect_output_and_error $LOG_LEVEL
 
 echo -e "\n**************************  SPI-UART chip test **************************\n" >&3
 
-VALUE=`lsmod | grep sc16is7xx`
-if [ -z "$VALUE" ]; then
-	echo -e "Inserting sc16is7xx driver\n"
-	modprobe sc16is7xx
-fi
-
 # sc16is7xx has 8 GPIO's, they get added from 504 to 511, 511 is connected to click power enable
 # while others are connected to LED
 echo -e "Enable Click Power \n"
