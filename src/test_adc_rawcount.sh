@@ -11,7 +11,7 @@
 # Limited, Home Park Estate, Kings Langley, Hertfordshire,
 # WD4 8LZ, U.K.
 
-#This script will read raw count from adc channels (0,1,2,3,6,7) and wait for the user input.
+#This script will read raw count from adc channels (0,1,2,3,5,6,7) and wait for the user input.
 LOG_LEVEL=1
 source common.sh
 usage()
@@ -19,7 +19,7 @@ usage()
 cat << EOF
 Usage: sh test_adc_rawcount.sh
 Details:
-    Prints raw count for ADC channels (0,1,2,3,6,7)
+    Prints raw count for ADC channels (0,1,2,3,5,6,7)
 
 OPTIONS:
 -h	Show this message
@@ -65,6 +65,7 @@ do
         get_adc_channel_raw_count 1
         get_adc_channel_raw_count 2
         get_adc_channel_raw_count 3
+        get_adc_channel_raw_count 5
         get_adc_channel_raw_count 6
         get_adc_channel_raw_count 7
     elif [[ $user_input = "x" ]]; then
