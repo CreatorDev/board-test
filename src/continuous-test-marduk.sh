@@ -25,8 +25,9 @@
 # et - ethernet
 # wf - WiFi
 # 6l - 6LoWPAN
+# tb - thermo3 bargraph
 
-TESTLIST="au hb sd et wf 6l"
+TESTLIST="au hb sd et wf 6l tb"
 
 # source any environment variables if set by tester
 source ./common.sh
@@ -54,6 +55,7 @@ sd - SD card
 et - ethernet
 wf - WiFi
 6l - 6LoWPAN
+tb - thermo3 bargraph
 
 OPTIONS:
 -h	Show this message
@@ -72,6 +74,7 @@ kill_all_tests()
 	killall test_ethernet.sh
 	killall test_6lowpan.sh
 	killall test_wifi.sh
+	killall test_click_thermo3_to_bargraph.sh
 }
 
 kill_all_tests_and_exit()
@@ -164,6 +167,12 @@ start_bg_test_wf()
 start_bg_test_6l()
 {
 	./test_6lowpan.sh -c 0 &
+	sleep 2
+}
+
+start_bg_test_tb()
+{
+	./test_click_thermo3_to_bargraph.sh -c 0 &
 	sleep 2
 }
 
