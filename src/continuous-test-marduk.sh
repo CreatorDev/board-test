@@ -21,13 +21,59 @@ if [ $? -eq 0 ];then
 	source ./env.sh
 fi
 
-# killing all processes if they are running
-killall test_audio.sh
-killall test_heartbeat_led.sh
-killall test_sdcard.sh
-killall test_ethernet.sh
-killall test_6lowpan.sh
-killall test_wifi.sh
+usage()
+{
+cat << EOF
+
+usage: $0 options
+
+OPTIONS:
+-h	Show this message
+-k	Kill all tests which were started by this script earlier
+-V	Show package version
+
+EOF
+}
+
+kill_all_tests()
+{
+	# killing all tests if they are running
+	killall test_audio.sh
+	killall test_heartbeat_led.sh
+	killall test_sdcard.sh
+	killall test_ethernet.sh
+	killall test_6lowpan.sh
+	killall test_wifi.sh
+}
+
+kill_all_tests_and_exit()
+{
+	kill_all_tests
+	exit 0
+}
+
+# handle Ctrl+c
+trap kill_all_tests_and_exit INT
+
+while getopts "kVh" opt; do
+	case $opt in
+		k)
+			kill_all_tests
+			exit 0;;
+		V)
+			echo -n "version = "
+			cat version
+			exit 0;;
+		h)
+			usage
+			exit 0;;
+		\?)
+			usage
+			exit 1;;
+	esac
+done
+
+kill_all_tests
 
 # starting test scripts in background
 ./test_audio.sh -d hw:0,2 -c 0 &
