@@ -13,22 +13,6 @@
 
 source common.sh
 
-get_mikrobus_number()
-{
-    MB=$1
-    if [ -z "$MB" ]; then
-        echo -e "Please provide mikroBUS number (1 or 2) as an argument\n" >&3
-        exit 1
-    fi
-
-    if [ $MB -ne 1 -a $MB -ne 2 ]; then
-        echo -e "Error: correct mikroBUS values are 1 or 2\n" >&3
-        exit 1
-    fi
-
-    return $MB
-}
-
 enable_pwm()
 {
     MB=$1
