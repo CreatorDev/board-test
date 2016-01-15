@@ -12,12 +12,15 @@
 # Limited, Home Park Estate, Kings Langley, Hertfordshire,
 # WD4 8LZ, U.K.
 
-# This script will test sdcard by doing read write to it
-# And it will work only if sdcard has fat filesystem
+# This script will test sdcard/eMMC by doing read write to it
+# And it will work only if sdcard/eMMC has ext4 filesystem.
+# The script will test sdcard by default.
 
 LOG_LEVEL=1
 TRIALS=1
 CONTINUOUS=false
+TEST_DEVICE=mmcblk0p
+SEARCH_CMD="grep $TEST_DEVICE"
 
 source common.sh
 
@@ -30,18 +33,22 @@ usage: $0 options
 OPTIONS:
 -h	Show this message
 -c	Number of trials, default 1, and pass -c 0 for continuous mode
+-e	Test eMMc
 -v	Verbose
 -V	Show package version
 
 EOF
 }
 
-while getopts "c:vVh" opt; do
+while getopts "c:veVh" opt; do
 	case $opt in
 		c)
 			TRIALS=$OPTARG;;
 		v)
 			LOG_LEVEL=2;;
+		e)
+			TEST_DEVICE=mmcblk0
+			SEARCH_CMD="grep $TEST_DEVICE -w";;
 		V)
 			echo -n "version = "
 			cat version
@@ -57,11 +64,9 @@ done
 
 redirect_output_and_error $LOG_LEVEL
 
-echo -e "\n******************************* SD card test **********************************\n" >&3
+echo -e "\n******************************* SD card/emmc test **********************************\n" >&3
 
-TOTAL_MMC_DEVS=`ls /dev | grep mmcblk0p -c`
-
-echo "$COUNT mmc partitions found"
+TOTAL_MMC_DEVS=`ls /dev | $SEARCH_CMD -c`
 
 create_mountpoints()
 {
@@ -70,7 +75,7 @@ create_mountpoints()
 	do
 		COUNT=`expr $COUNT - 1`
 		NUM=$(($TOTAL_MMC_DEVS-$COUNT))
-		MMC_DEVICE=`ls /dev/ | grep mmcblk0p | head -n $NUM | tail -n 1`
+		MMC_DEVICE=`ls /dev/ | $SEARCH_CMD | head -n $NUM | tail -n 1`
 		MOUNT_DIR=/mnt/$MMC_DEVICE
 
 		if mountpoint -q -- $MOUNT_DIR;then
@@ -79,7 +84,8 @@ create_mountpoints()
 		fi
 
 		mkdir -p $MOUNT_DIR
-		mount -t vfat /dev/$MMC_DEVICE $MOUNT_DIR
+		mkfs.ext4 -F /dev/$MMC_DEVICE
+		mount -t ext4 /dev/$MMC_DEVICE $MOUNT_DIR
 	done
 }
 
@@ -101,7 +107,7 @@ if [ $TOTAL_MMC_DEVS -ne 0 ];then
 		do
 			COUNT=$((COUNT-1))
 			NUM=$(($TOTAL_MMC_DEVS-$COUNT))
-			MMC_DEVICE=`ls /dev/ | grep mmcblk0p | head -n $NUM | tail -n 1`
+			MMC_DEVICE=`ls /dev/ | $SEARCH_CMD | head -n $NUM | tail -n 1`
 			MOUNT_DIR=/mnt/$MMC_DEVICE
 
 			if mountpoint -q -- $MOUNT_DIR;then
@@ -119,7 +125,7 @@ if [ $TOTAL_MMC_DEVS -ne 0 ];then
 						exit 1
 					fi
 				fi
-				[ $CONTINUOUS == true ] && update_test_status "sdcard" 2 $PASS $FAIL
+				[ $CONTINUOUS == true ] && update_test_status "$TEST_DEVICE" 2 $PASS $FAIL
 				rm /tmp/temp0.img $MOUNT_DIR/temp1.img >&4
 			fi
 		done
@@ -128,7 +134,6 @@ if [ $TOTAL_MMC_DEVS -ne 0 ];then
 	done
 
 else
-	echo "FAIL - mmc partitions not found" >&3
+	echo "FAIL - partitions not found" >&3
 	exit 1
 fi
-
