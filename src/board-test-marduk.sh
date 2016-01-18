@@ -41,6 +41,8 @@ print_result()
 SWITCH_TEST=$?
 ./test_audio.sh -d hw:0,2 -w $@
 AUDIO_TEST=$?
+./test_mic.sh -i mic -o hw:0,2 -t 15 -w $@
+MIC_TEST=$?
 ./test_heartbeat_led.sh $@
 HEARTBEAT_LED_TEST=$?
 ./test_spi_uart.sh $@
@@ -73,6 +75,7 @@ WIFI_TEST=$?
 echo -e "\n******************************* RESULTS ************************************\n"
 print_result "SWITCH" $SWITCH_TEST
 print_result "AUDIO" $AUDIO_TEST
+print_result "MIC" $MIC_TEST
 print_result "HEARTBEAT_LED" $HEARTBEAT_LED_TEST
 print_result "SPI_UART" $SPI_UART_TEST
 print_result "NOR" $NOR_TEST
