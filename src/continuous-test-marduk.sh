@@ -26,8 +26,9 @@
 # wf - WiFi
 # 6l - 6LoWPAN
 # tb - thermo3 bargraph
+# pr - proximity
 
-TESTLIST="au hb sd et wf 6l tb"
+TESTLIST="au hb sd et wf 6l tb pr"
 
 # source any environment variables if set by tester
 source ./common.sh
@@ -56,6 +57,7 @@ et - ethernet
 wf - WiFi
 6l - 6LoWPAN
 tb - thermo3 bargraph
+pr - proximity
 
 OPTIONS:
 -h	Show this message
@@ -75,6 +77,7 @@ kill_all_tests()
 	killall test_6lowpan.sh
 	killall test_wifi.sh
 	killall test_click_thermo3_to_bargraph.sh
+	killall test_click_proximity.sh
 }
 
 kill_all_tests_and_exit()
@@ -175,6 +178,13 @@ start_bg_test_tb()
 	./test_click_thermo3_to_bargraph.sh -c 0 &
 	sleep 2
 }
+
+start_bg_test_pr()
+{
+	./test_click_proximity.sh -c 0 &
+	sleep 2
+}
+
 
 # Start selected tests
 TEST_STARTED=false

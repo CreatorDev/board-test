@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Copyright 2015 by Imagination Technologies Limited and/or its affiliated group companies.
 #
@@ -12,9 +13,11 @@
 # WD4 8LZ, U.K.
 
 # This test reads proximity and checks if the value in the expected range.
-# The test takes one argument specifying mikroBUS number (1 or 2).
+# By default, the click board is assumed sitting in mikroBUS 1.
 
 LOG_LEVEL=1
+COUNTER=1
+MIKROBUS=1
 
 usage()
 {
@@ -24,15 +27,18 @@ usage: $0 options
 
 OPTIONS:
 -h     Show this message
--m     mikroBUS number (1 or 2)
+-c     Number of times to run this test (0 means forever, default 1)
+-m     mikroBUS number (1 or 2, default 1)
 -v     Verbose
 -V     Show package version
 
 EOF
 }
 
-while getopts "m:vVh" opt; do
-       case $opt in
+while getopts "c:m:vVh" opt; do
+        case $opt in
+               c)
+                       COUNTER=$OPTARG;;
                m)
                        MIKROBUS=$OPTARG
                        if [[ $MIKROBUS -ne 1 && $MIKROBUS -ne 2 ]]; then
@@ -51,13 +57,8 @@ while getopts "m:vVh" opt; do
                \?)
                        usage
                        exit 1;;
-       esac
+        esac
 done
-
-if [[ -z $MIKROBUS ]];then
-       usage
-       exit 1
-fi
 
 source click_common.sh
 redirect_output_and_error $LOG_LEVEL
@@ -72,24 +73,65 @@ MAX_VALUE=52000
 
 enable_i2c_driver
 
-# Enable periodic measurements
-./test_click_access_proximity -m $MIKROBUS -a e
+run_test()
+{
+        # Enable periodic measurements
+        ./test_click_access_proximity -m $MIKROBUS -a e
+        if [ $? -ne 0 ];then
+            return 1
+        fi
 
-# Make sure that a measurement has finished
-sleep 1
+        # Make sure that a measurement has finished
+        sleep 1
 
-# Read the value
-VAL=`./test_click_access_proximity -m $MIKROBUS -a p`
+        # Read the value
+        VAL=`./test_click_access_proximity -m $MIKROBUS -a p`
+        if [ $? -ne 0 ];then
+            return 1
+        fi
 
-# Disable measurements
-./test_click_access_proximity -m $MIKROBUS -a d
+        # Disable measurements
+        ./test_click_access_proximity -m $MIKROBUS -a d
+        if [ $? -ne 0 ];then
+            return 1
+        fi
 
-echo "Proximity: $VAL" >&3
+        return 0
+}
 
-if [ $VAL -ge $MIN_VALUE -a $VAL -le $MAX_VALUE ]
-then
-    echo "PASS" >&3
-else
-    echo "FAIL (value not in expected range)" >&3
-    exit 1
+update_pass_fail_var()
+{
+        if [ $? -eq 0 -a $VAL -ge $MIN_VALUE -a $VAL -le $MAX_VALUE ]; then
+                PASS=$((PASS + 1))
+        else
+                FAIL=$((FAIL + 1))
+        fi
+}
+
+# Continuous test mode
+if [ $COUNTER -eq 0 ]; then
+        PASS=0
+        FAIL=0
+        echo -e "Testing click proximity sensor continuously\n" >&3
+        while true; do
+                run_test
+                update_pass_fail_var
+                update_test_status "proximity" 2 $PASS $FAIL
+        done
 fi
+
+# Call run_test $counter times
+while [ $COUNTER -ne 0 ]; do
+        PASS=0
+        run_test
+        update_pass_fail_var
+
+        echo "Proximity: $VAL" >&3
+        if [ $PASS -ne 0 ]; then
+                echo "PASS" >&3
+        else
+                echo "FAIL (value not in expected range)" >&3
+        fi
+        COUNTER=$((COUNTER - 1))
+done
+
