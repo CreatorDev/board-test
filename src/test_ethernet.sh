@@ -65,16 +65,38 @@ echo -e "\n******************************* Ethernet test ***********************
 # check if uci exist
 {
 	uci
-} >&4
+} >/dev/null 2>&1
 if [ $? -eq 0 ]; then
-	# disable wifi
-	uci set network.sta.enabled=0
-	#enable ethernet
-	uci set network.eth.enabled=1
-	uci commit network
-	/etc/init.d/S39netifd restart
-	echo -e "configuring eth..." >&3
-	sleep 15
+	CONFIG_CHANGED=false
+	# check if wifi is up
+	ifconfig | grep wlan >&4
+	if [ $? -eq 0 ]; then
+		# disable wifi
+		uci set network.sta.enabled=0
+		CONFIG_CHANGED=true
+	fi
+
+	# check if ethernet is up
+	ifconfig | grep eth >&4
+	if [ $? -ne 0 ]; then
+		# enable ethernet
+		uci set network.eth.enabled=1
+		CONFIG_CHANGED=true
+	fi
+
+	if (( $CONFIG_CHANGED )); then
+		uci commit network
+
+		# S39netifd is present in buildroot while in OpenWRT,
+		# network init script is used to configure network
+		if [ -f /etc/init.d/S39netifd ]; then
+			/etc/init.d/S39netifd restart
+		else
+			/etc/init.d/network reload
+		fi
+		echo "configuring eth..." >&3
+		sleep 15
+	fi
 else
 	# this is for marduk where uci is not applicable
 
