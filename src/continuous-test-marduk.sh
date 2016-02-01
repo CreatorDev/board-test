@@ -1,5 +1,5 @@
 #
-# Copyright 2015 by Imagination Technologies Limited and/or its affiliated group companies.
+# Copyright 2016 by Imagination Technologies Limited and/or its affiliated group companies.
 #
 # All rights reserved.  No part of this software, either
 # material or conceptual may be copied or distributed,
@@ -26,9 +26,10 @@
 # wf - WiFi
 # 6l - 6LoWPAN
 # tb - thermo3 bargraph
+# ac - accel
 # pr - proximity
 
-TESTLIST="au hb sd et wf 6l tb pr"
+TESTLIST="au hb sd et wf 6l tb ac pr"
 
 # source any environment variables if set by tester
 source ./common.sh
@@ -57,6 +58,7 @@ et - ethernet
 wf - WiFi
 6l - 6LoWPAN
 tb - thermo3 bargraph
+ac - accel
 pr - proximity
 
 OPTIONS:
@@ -77,6 +79,7 @@ kill_all_tests()
 	killall test_6lowpan.sh
 	killall test_wifi.sh
 	killall test_click_thermo3_to_bargraph.sh
+	killall test_click_accel.sh
 	killall test_click_proximity.sh
 }
 
@@ -179,12 +182,17 @@ start_bg_test_tb()
 	sleep 2
 }
 
+start_bg_test_ac()
+{
+	./test_click_accel.sh -c 0 &
+	sleep 2
+}
+
 start_bg_test_pr()
 {
 	./test_click_proximity.sh -c 0 &
 	sleep 2
 }
-
 
 # Start selected tests
 TEST_STARTED=false
