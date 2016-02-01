@@ -9,7 +9,7 @@
  *
  * @author Imagination Technologies
  *
- * @copyright <b>Copyright 2015 by Imagination Technologies Limited and/or its affiliated group companies.</b>
+ * @copyright <b>Copyright 2016 by Imagination Technologies Limited and/or its affiliated group companies.</b>
  *      All rights reserved.  No part of this software, either
  *      material or conceptual may be copied or distributed,
  *      transmitted, transcribed, stored in a retrieval system
@@ -22,63 +22,17 @@
  */
 
 #include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <linux/spi/spidev.h>
+#include <sys/ioctl.h>
 #include <string.h>
 #include <stdbool.h>
-
-#define MIKROBUS1_SPI_PATH "/dev/spidev32766.2"
-#define MIKROBUS2_SPI_PATH "/dev/spidev32766.3"
+#include "spi_common.h"
 
 #define DEMO_ITERATIONS 4
 #define DEMO_DELAY 4000
 
-static int mikrobus_spi_init(const char *spi_path)
-{
-    int fd;
-    uint8_t bits_per_word = 8;
-    uint32_t mode = SPI_MODE_3;
-    uint32_t speed = 1000000;
-
-    if ((fd = open(spi_path, O_NONBLOCK)) == -1) {
-        perror("SPI error: can't open device");
-        return -1;
-    }
-    if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1) {
-        perror("SPI error: can't set mode");
-        return -1;
-    }
-    if (ioctl(fd, SPI_IOC_RD_MODE, &mode) == -1) {
-        perror("SPI error: can't get mode");
-        return -1;
-    }
-    if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits_per_word) == -1) {
-        perror("SPI error: can't set bits per word");
-        return -1;
-    }
-    if (ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &bits_per_word) == -1) {
-        perror("SPI error: can't get bits per word");
-        return -1;
-    }
-    if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) == -1) {
-        perror("SPI error: can't set max speed HZ");
-        return -1;
-    }
-    if (ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed) == -1) {
-        perror("SPI error: can't get max speed HZ");
-        return -1;
-    }
-
-    return fd;
-}
-
-static inline void mikrobus_spi_free(int fd)
-{
-    close(fd);
-}
 
 /* bottom 10 bits of display_seg argument correspond to 10 display segments */
 static int bargraph_send_to_display(int fd, unsigned int display_seg)
