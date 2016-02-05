@@ -87,10 +87,10 @@ if [ $? -eq 0 ]; then
 	if (( $CONFIG_CHANGED )); then
 		uci commit network
 
-		# S39netifd is present in buildroot while in OpenWRT,
+		# S40network is present in buildroot while in OpenWRT,
 		# network init script is used to configure network
-		if [ -f /etc/init.d/S39netifd ]; then
-			/etc/init.d/S39netifd restart
+		if [ -f /etc/init.d/S40network ]; then
+			/etc/init.d/S40network restart
 		else
 			/etc/init.d/network reload
 		fi
