@@ -112,7 +112,7 @@ if [ $? -eq 0 ]; then
 		echo uccp_num_spatial_streams=1 > /proc/uccp420/params
 		echo antenna_sel=$ANTENNA > /proc/uccp420/params
 	fi
-	/etc/init.d/S39netifd restart
+	/etc/init.d/S40network restart
 	echo -e "configuring wifi..." >&3
 	sleep 20
 	WLAN_STATUS=0
