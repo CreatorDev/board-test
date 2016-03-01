@@ -28,8 +28,9 @@
 # tb - thermo3 bargraph
 # ac - accel
 # pr - proximity
+# su - SPI-UART chip
 
-TESTLIST="au hb sd et wf 6l tb ac pr"
+TESTLIST="au hb sd et wf 6l tb ac pr su"
 
 # source any environment variables if set by tester
 source ./common.sh
@@ -60,6 +61,7 @@ wf - WiFi
 tb - thermo3 bargraph
 ac - accel
 pr - proximity
+su - SPI-UART chip
 
 OPTIONS:
 -h	Show this message
@@ -81,6 +83,7 @@ kill_all_tests()
 	killall test_click_thermo3_to_bargraph.sh
 	killall test_click_accel.sh
 	killall test_click_proximity.sh
+	killall test_spi_uart.sh
 }
 
 kill_all_tests_and_exit()
@@ -191,6 +194,12 @@ start_bg_test_ac()
 start_bg_test_pr()
 {
 	./test_click_proximity.sh -c 0 &
+	sleep 2
+}
+
+start_bg_test_su()
+{
+	./test_spi_uart.sh -c 0 &
 	sleep 2
 }
 
