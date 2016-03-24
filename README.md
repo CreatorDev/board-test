@@ -11,3 +11,4 @@ Tests:
 * sdcard/eMMC: tries to read/write to sdcard/eMMC. Formats to ext4 if no partition is found.
 * spi_uart_leds: switch on/off each led for 50 ms.
 * switch: checks that interrupts from pushing switch is triggered and that it corresponds to the right switch.
+* audio: outputs a sine wave twice.
