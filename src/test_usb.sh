@@ -37,7 +37,7 @@ CONTINUOUS=false
 PASS=0
 FAIL=0
 SRC_TEMP_FILE=/tmp/temp0.img
-DST_TEMP_FILE=/data/temp1.img
+DST_TEMP_FILE=/tmp/temp1.img
 
 USAGE="
 Usage: $0 options
