@@ -30,13 +30,14 @@
 # ensure that MFIO number is correct
 
 . /usr/lib/board_test_common.sh
+
 redirect_output_and_error $LOG_LEVEL
 
 USAGE="
 Usage: Give argument as MFIO number
 
 Example:
-	$0 76
+	$0 511
 "
 
 if [ "$#" -lt 1 ]; then
@@ -50,18 +51,16 @@ MFIO=$1
 ls /sys/class/gpio/gpio$MFIO  >/dev/null
 
 if [ $? -ne $SUCCESS ]; then
-	{
-		echo $MFIO > /sys/class/gpio/export
-	}>&$CUSTOM_STDOUT
-	# check for any error, some gpio cannot be exported
+	{ echo $MFIO > /sys/class/gpio/export } >&$CUSTOM_STDOUT
 	if [ $? -ne $SUCCESS ]; then
+		LOG_ERROR "Failed to export gpio"
 		exit $FAILURE
 	fi
 fi
+
 {
 	# set pin direction as input
 	echo in > /sys/class/gpio/gpio$MFIO/direction
-
 	#get value
 	cat /sys/class/gpio/gpio$MFIO/value
-}>&$CUSTOM_STDOUT
+} >&$CUSTOM_STDOUT
