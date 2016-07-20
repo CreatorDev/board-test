@@ -171,16 +171,17 @@ parse_command_line()
 
 single_ping()
 {
-	PING_TYPE=$1
-	INTERFACE=$2
-	REMOTE_IP_ADDR=$3
+	local PING_TYPE=$1
+	local INTERFACE=$2
+	local REMOTE_IP_ADDR=$3
+	local PACKET_SIZE=$4
 
 	if [ $PING_TYPE = "ipv6" ]; then
-		ping6 -I $INTERFACE $REMOTE_IP_ADDR -c 1
+		ping6 -I $INTERFACE $REMOTE_IP_ADDR -c 1 -s $PACKET_SIZE
 	elif [ $PING_TYPE = "bt" ]; then
-		l2ping $REMOTE_IP_ADDR -c 1
+		l2ping $REMOTE_IP_ADDR -c 1 -s $PACKET_SIZE
 	else
-		ping -I $INTERFACE $REMOTE_IP_ADDR -c 1
+		ping -I $INTERFACE $REMOTE_IP_ADDR -c 1 -s $PACKET_SIZE
 	fi
 
 	ret=$?
@@ -209,16 +210,17 @@ update_test_status()
 
 continuous_ping()
 {
-	INTERFACE=$2
-	REMOTE_IP_ADDR=$3
-	INTERVAL=$4
-
-	PASS=0
-	FAIL=0
+	local PING_TYPE=$1
+	local INTERFACE=$2
+	local REMOTE_IP_ADDR=$3
+	local PACKET_SIZE=$4
+	local INTERVAL=$5
+	local PASS=0
+	local FAIL=0
 
 	while true
 	do
-		single_ping $1 $2 $3
+		single_ping $PING_TYPE $INTERFACE $REMOTE_IP_ADDR $PACKET_SIZE
 		if [ $ret -ne "0" ]; then
 			LOG_INFO "Pinging from $INTERFACE to $REMOTE_IP_ADDR failed\n"
 			FAIL=$((FAIL + 1))
@@ -233,12 +235,16 @@ continuous_ping()
 # pings specified number of times and returns the pass percentage
 get_ping_percentage()
 {
-	PING_COUNT=$4
+	local PING_TYPE=$1
+	local INTERFACE=$2
+	local REMOTE_IP_ADDR=$3
+	local PACKET_SIZE=$4
+	local PING_COUNT=$5
 
-	PASS_COUNT=0
+	local PASS_COUNT=0
 	for i in $(seq 1 1 $PING_COUNT)
 	do
-		single_ping $1 $2 $3
+		single_ping $PING_TYPE $INTERFACE $REMOTE_IP_ADDR $PACKET_SIZE
 		if [ $ret -eq "0" ]; then
 			PASS_COUNT=$(($PASS_COUNT + 1))
 		fi
