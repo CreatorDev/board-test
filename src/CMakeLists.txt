@@ -21,3 +21,9 @@ INSTALL(FILES board_test_common.sh DESTINATION /usr/lib
 					WORLD_EXECUTE WORLD_READ)
 INSTALL(FILES version DESTINATION /usr/bin/board_test)
 INSTALL(TARGETS test_switch RUNTIME DESTINATION /usr/bin/board_test)
+
+# Optional click tests
+#OPTION(BUILD_CLICK_TESTS "Build also click tests" OFF)
+#IF(BUILD_CLICK_TESTS)
+	ADD_SUBDIRECTORY(click)
+#ENDIF(BUILD_CLICK_TESTS)
