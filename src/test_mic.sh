@@ -45,8 +45,8 @@ Usage: $0 options
 
 OPTIONS:
 -h         Show this message
--i  <arg>  PCM input device name e.g. -i mic
--o  <arg>  PCM output device name e.g. -o hw:0,2
+-i  <arg>  PCM input device name e.g. -i default
+-o  <arg>  PCM output device name e.g. -o hw:0,2/default
 -w         Wait for user input on PASS/FAIL
 -c  <arg>  Seconds to record and play, default 30 secs, pass 0 for continuous mode
 -v         Verbose
