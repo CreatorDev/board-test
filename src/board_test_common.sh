@@ -179,7 +179,7 @@ single_ping()
 	if [ $PING_TYPE = "ipv6" ]; then
 		ping6 -I $INTERFACE $REMOTE_IP_ADDR -c 1 -s $PACKET_SIZE
 	elif [ $PING_TYPE = "bt" ]; then
-		l2ping $REMOTE_IP_ADDR -c 1 -s $PACKET_SIZE
+		l2ping -c 1 -s $PACKET_SIZE $REMOTE_IP_ADDR
 	else
 		ping -I $INTERFACE $REMOTE_IP_ADDR -c 1 -s $PACKET_SIZE
 	fi
