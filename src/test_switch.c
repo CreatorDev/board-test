@@ -50,6 +50,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <linux/input.h>
 #include "log.h"
 
