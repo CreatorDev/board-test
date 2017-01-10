@@ -153,7 +153,7 @@ int main (int argc, char *argv[])
 	bool pass = true, wait_for_switch_press = false;
 	debug_stream = stdout;
 
-	char *device = "/dev/input/event1";
+	char *device = "/dev/input/event0";
 	Switch switches[] = {{"Switch 1", SWITCH_1_PRESSED, SWITCH_1_CODE},
 						 {"Switch 2", SWITCH_2_PRESSED, SWITCH_2_CODE}};
 
