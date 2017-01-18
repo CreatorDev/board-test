@@ -160,6 +160,9 @@ switch_off_leds_and_exit()
 {
 	switch_off_leds
 	reset_color
+
+	# Ensure that heartbeat LED is blinking after running the test
+	echo "timer" > /sys/class/leds/marduk\:red\:heartbeat/trigger
 	exit $FAILURE
 }
 
@@ -185,6 +188,7 @@ while [ "$CONTINUOUS" = true -o $TRIALS -gt 0 ]
 do
 	run_test
 	if [ $? -ne $SUCCESS -a $CONTINUOUS != true ]; then
+		switch_off_leds_and_exit
 		exit $FAILURE
 	fi
 
@@ -195,3 +199,5 @@ do
 	TRIALS=$(($TRIALS-1))
 	sleep 1
 done
+
+switch_off_leds_and_exit
