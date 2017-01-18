@@ -156,7 +156,7 @@ run_test()
 	return $SUCCESS
 }
 
-switch_off_leds_and_exit()
+cleanup_and_exit()
 {
 	switch_off_leds
 	reset_color
@@ -167,7 +167,7 @@ switch_off_leds_and_exit()
 }
 
 # handle Ctrl+c
-trap switch_off_leds_and_exit INT
+trap cleanup_and_exit INT
 
 LOG_INFO "\n**************************  SPI-UART LEDS test **************************\n"
 
@@ -188,7 +188,7 @@ while [ "$CONTINUOUS" = true -o $TRIALS -gt 0 ]
 do
 	run_test
 	if [ $? -ne $SUCCESS -a $CONTINUOUS != true ]; then
-		switch_off_leds_and_exit
+		cleanup_and_exit
 		exit $FAILURE
 	fi
 
@@ -200,4 +200,4 @@ do
 	sleep 1
 done
 
-switch_off_leds_and_exit
+cleanup_and_exit
